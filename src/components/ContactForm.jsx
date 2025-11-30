@@ -16,7 +16,7 @@ const ContactForm = () => {
   const handleFileChange = (e) => {
     const newFiles = Array.from(e.target.files).filter(file => file.type.startsWith('image/'));
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-    e.target.value = null; // Сброс, чтобы можно было добавить те же файлы
+    e.target.value = null;
   };
 
   const removeFile = (index) => {
@@ -104,7 +104,6 @@ const ContactForm = () => {
                 required
               ></textarea>
               
-              {/* Кнопка добавления файлов */}
               <label 
                 htmlFor="file-upload" 
                 className="absolute right-3 top-3 w-8 h-8 flex items-center justify-center bg-rzd-red text-white rounded-full cursor-pointer hover:bg-rzd-red/90 transition duration-300 shadow-md"
@@ -122,7 +121,6 @@ const ContactForm = () => {
             </div>
           </div>
 
-          {/* Список прикрепленных файлов */}
           {files.length > 0 && (
             <div className="mb-6 p-3 bg-white border border-gray-200 rounded-lg">
               <p className="text-sm font-medium mb-2 text-gray-700">Прикрепленные файлы:</p>
@@ -143,7 +141,6 @@ const ContactForm = () => {
             </div>
           )}
 
-          {/* Статус и кнопка отправки */}
           {status && (
             <p className={`mb-4 text-center text-sm font-medium ${status.startsWith('❌') ? 'text-red-600' : 'text-green-600'}`}>
               {status}
