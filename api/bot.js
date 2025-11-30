@@ -1,7 +1,7 @@
 const { URLSearchParams } = require('url');
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const OWNER_ID = process.env.OWNER_ID;
+const ADMIN_ID = process.env.OWNER_ID; 
 const VERCEL_DOMAIN = process.env.VERCEL_DOMAIN;
 
 const getRawBody = (req) => {
@@ -13,9 +13,7 @@ const getRawBody = (req) => {
         req.on('end', () => {
             resolve(Buffer.concat(body));
         });
-        req.on('error', (err) => {
-            reject(err);
-        });
+        req.on('error', reject);
     });
 };
 
@@ -41,7 +39,7 @@ function parseMultipartData(buffer, contentType) {
         if (headerEnd === -1) break;
 
         const headersText = partBuffer.slice(0, headerEnd).toString('utf8');
-        const content = partBuffer.slice(headerEnd + 4); // +4 for \r\n\r\n
+        const content = partBuffer.slice(headerEnd + 4); 
 
         const headers = headersText.split('\r\n').reduce((acc, line) => {
             const [key, value] = line.split(': ');
@@ -72,18 +70,18 @@ function parseMultipartData(buffer, contentType) {
             }
         }
 
-        startIndex = endIndex + boundaryDelimiter.length - 2; // -2 for \r\n
+        startIndex = endIndex + boundaryDelimiter.length - 2; 
     }
     return parts;
 }
 
-
-async function sendTelegramMessage(text) {
+async function sendTelegramMessage(chatId, text, disablePreview = false) {
     const telegramApi = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
     const params = {
-        chat_id: OWNER_ID,
+        chat_id: chatId,
         text: text,
         parse_mode: 'Markdown',
+        disable_web_page_preview: disablePreview
     };
 
     const response = await fetch(telegramApi, {
@@ -93,16 +91,14 @@ async function sendTelegramMessage(text) {
     });
 
     if (!response.ok) {
-        throw new Error(`Failed to send text message: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to send message: ${response.status} ${response.statusText}`);
     }
-    return response.json();
 }
 
 async function sendTelegramFile(filePart, fileIndex) {
     const telegramApi = `https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`;
-
     const formData = new FormData();
-    formData.append('chat_id', OWNER_ID);
+    formData.append('chat_id', ADMIN_ID);
     
     const fileBlob = new Blob([filePart.data], { type: filePart.contentType });
     
@@ -116,57 +112,96 @@ async function sendTelegramFile(filePart, fileIndex) {
     if (!response.ok) {
         throw new Error(`Failed to send file ${filePart.filename}: ${response.status} ${response.statusText}`);
     }
-    return response.json();
 }
+
+
+// --- Обработчик Webhook (Сообщения Боту) ---
+async function handleWebhook(req, res) {
+    const update = req.body;
+    
+    if (!update.message) {
+        return res.status(200).send('No message update');
+    }
+
+    const chatId = update.message.chat.id.toString();
+    const isAdmin = chatId === ADMIN_ID.toString();
+    const userName = update.message.chat.first_name || 'Создатель';
+    
+    let responseText;
+
+    if (isAdmin) {
+        responseText = `*С возвращением, Повелитель Стальных Магистралей!* 👑\n\nПортал ожидает ваших команд. Все системы функционируют в штатном режиме.\n\n🔗 *Ваш ресурс доступен:* ${VERCEL_DOMAIN}`;
+        await sendTelegramMessage(chatId, responseText, true); 
+    } else {
+        responseText = `Здравствуйте, ${userName}! 👋\n\nЯ — бот-помощник Портала машиниста. Наш ресурс посвящен современным и легендарным локомотивам РЖД, а также содержит информацию о том, как начать карьеру машиниста.\n\nПереходите по ссылке, чтобы узнать больше: ${VERCEL_DOMAIN}`;
+        await sendTelegramMessage(chatId, responseText, false); 
+    }
+
+    res.status(200).send('OK');
+}
+
+// --- Обработчик Формы Обратной Связи ---
+async function handleFeedback(req, res) {
+    const rawBody = await getRawBody(req);
+    const contentType = req.headers['content-type'];
+    
+    const parts = parseMultipartData(rawBody, contentType);
+
+    const fields = parts.filter(p => !p.filename);
+    const files = parts.filter(p => p.filename);
+
+    const name = fields.find(f => f.name === 'name')?.value || 'Не указано';
+    const email = fields.find(f => f.name === 'email')?.value || 'Не указан';
+    const messageText = fields.find(f => f.name === 'message')?.value || 'Нет текста сообщения';
+
+    let message = `*✉️ НОВАЯ ОБРАТНАЯ СВЯЗЬ С ПОРТАЛА* ✉️\n\n`;
+    message += `*Отправитель:* \`${name}\`\n`;
+    message += `*E-mail для ответа:* \`${email}\`\n`;
+    message += `*Сообщение:*\n${messageText}`;
+    
+    if (files.length > 0) {
+        message += `\n\n_К этому сообщению приложено ${files.length} файл(ов). Они будут отправлены отдельными сообщениями._`;
+    }
+
+    await sendTelegramMessage(ADMIN_ID, message); 
+
+    for (let i = 0; i < files.length; i++) {
+        await sendTelegramFile(files[i], i + 1);
+    }
+
+    res.status(200).json({ success: true, message: 'Сообщение успешно отправлено.' });
+}
+
+
+// --- Главный Обработчик ---
 
 module.exports = async (req, res) => {
     if (req.method !== 'POST') {
-        res.status(405).json({ success: false, message: 'Method Not Allowed' });
-        return;
+        return res.status(405).send('Method Not Allowed');
     }
 
-    if (!BOT_TOKEN || !OWNER_ID) {
-        res.status(500).json({ success: false, message: 'Server configuration error: BOT_TOKEN or OWNER_ID is missing.' });
-        return;
+    if (!BOT_TOKEN || !ADMIN_ID || !VERCEL_DOMAIN) {
+        return res.status(500).json({ success: false, message: 'Configuration error.' });
     }
 
     try {
-        const rawBody = await getRawBody(req);
-        const contentType = req.headers['content-type'];
-        
-        const parts = parseMultipartData(rawBody, contentType);
-
-        const fields = parts.filter(p => !p.filename);
-        const files = parts.filter(p => p.filename);
-
-        const email = fields.find(f => f.name === 'email')?.value || 'Не указан';
-        const messageText = fields.find(f => f.name === 'message')?.value || 'Нет текста сообщения';
-
-        let message = `*Новое сообщение с портала РЖД-Машиниста*\n\n`;
-        message += `*E-mail:* \`${email}\`\n`;
-        message += `*Сообщение:*\n${messageText}`;
-        
-        if (files.length > 0) {
-            message += `\n\n_К этому сообщению приложено ${files.length} файл(ов). Они будут отправлены отдельными сообщениями._`;
+        // Проверяем, является ли запрос Webhook'ом от Telegram (наличие объекта message)
+        if (req.body && req.body.message) {
+            await handleWebhook(req, res);
+        } else {
+            // Если это не Webhook, считаем, что это POST-запрос с формы (Feedback)
+            await handleFeedback(req, res);
         }
-
-        await sendTelegramMessage(message);
-
-        for (let i = 0; i < files.length; i++) {
-            await sendTelegramFile(files[i], i + 1);
-        }
-
-        const confirmationMessage = `*Автоматическое подтверждение*\n\nВаше сообщение успешно получено! Мы свяжемся с вами в ближайшее время на почту: \`${email}\`.`;
-        if (VERCEL_DOMAIN) {
-             confirmationMessage += `\n\n[Перейти на портал](${VERCEL_DOMAIN})`;
-        }
-        
-        await sendTelegramMessage(confirmationMessage);
-
-        res.status(200).json({ success: true, message: 'Message and files sent successfully' });
 
     } catch (error) {
-        console.error('Telegram API Error:', error.message);
-        res.status(500).json({ success: false, message: 'Failed to process request due to internal error.', error: error.message });
+        console.error('Unified API Error:', error.message);
+        
+        // Для Webhook запросов, всегда отвечаем 200, чтобы Telegram не переотправлял сообщение.
+        // Для Form запросов, отвечаем 500.
+        if (req.body && req.body.message) {
+            res.status(200).send('Error processed');
+        } else {
+            res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
+        }
     }
 };
