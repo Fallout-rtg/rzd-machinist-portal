@@ -56,6 +56,7 @@
             transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             transform-style: preserve-3d;
             height: 100%;
+            position: relative;
         }
 
         .carousel-slide {
@@ -89,6 +90,12 @@
             opacity: 0.2;
             transform: translateX(80%) scale(0.7) rotateY(-15deg) translateZ(-200px);
             z-index: 5;
+        }
+        
+        .carousel-slide.hidden {
+            opacity: 0;
+            transform: translateX(150%) scale(0.6);
+            z-index: 1;
         }
         
         .nav-overlay {
@@ -144,6 +151,21 @@
             opacity: 1;
             transform: translateY(0);
         }
+        
+        .section-scroll {
+            scroll-margin-top: 100px;
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -187,7 +209,7 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-        <section id="intro" class="text-center py-16 sm:py-24 mb-12 bg-white rounded-3xl shadow-2xl border-b-8 border-rzd-red transform hover:translate-y-1 transition duration-300">
+        <section id="intro" class="text-center py-16 sm:py-24 mb-12 bg-white rounded-3xl shadow-2xl border-b-8 border-rzd-red transform hover:translate-y-1 transition duration-300 section-scroll">
             <h2 class="text-4xl sm:text-6xl font-black mb-4 text-gray-900 leading-tight">
                 Машинист — <span class="text-rzd-red">Профессия Будущего</span>
             </h2>
@@ -196,7 +218,7 @@
             </p>
         </section>
 
-        <section id="locomotives" class="py-10">
+        <section id="locomotives" class="py-10 section-scroll">
             <h3 class="text-3xl font-extrabold text-gray-900 mb-10 border-b-4 border-rzd-red pb-3">Интерактивная галерея локомотивов</h3>
             
             <div id="locomotive-carousel" class="relative mx-auto max-w-5xl">
@@ -219,7 +241,7 @@
             </div>
         </section>
 
-        <section id="crew-life" class="py-10 mt-12">
+        <section id="crew-life" class="py-10 mt-12 section-scroll">
             <h3 class="text-3xl font-extrabold text-gray-900 mb-10 border-b-4 border-rzd-red pb-3">Профессия: Жизнь машиниста</h3>
             
             <div class="bg-white p-8 rounded-2xl shadow-2xl border-l-8 border-rzd-red flex flex-col lg:flex-row items-center space-y-6 lg:space-y-0 lg:space-x-8">
@@ -257,7 +279,7 @@
             </div>
         </section>
 
-        <section id="education" class="py-10 mt-12">
+        <section id="education" class="py-10 mt-12 section-scroll">
             <h3 class="text-3xl font-extrabold text-gray-900 mb-10 border-b-4 border-rzd-red pb-3">Как стать машинистом: Путь к цели</h3>
 
             <div class="grid md:grid-cols-3 gap-8">
@@ -396,6 +418,7 @@
         const fileListContainer = document.getElementById('file-list');
         const fileInput = document.getElementById('file-attachments');
         
+        // Preload all images
         function preloadImages() {
             LOCOMOTIVES.forEach(loco => {
                 const img = new Image();
@@ -407,6 +430,7 @@
             track.innerHTML = '';
             paginationContainer.innerHTML = '';
 
+            // Create all slides at once and keep them in DOM
             LOCOMOTIVES.forEach((loco, index) => {
                 const slide = document.createElement('div');
                 slide.className = 'carousel-slide absolute top-0 left-0 w-full h-full';
@@ -440,7 +464,7 @@
             const dots = Array.from(paginationContainer.children);
 
             slides.forEach((slide, index) => {
-                slide.classList.remove('active', 'prev', 'next');
+                slide.classList.remove('active', 'prev', 'next', 'hidden');
                 
                 let position = index - currentSlide;
                 
@@ -457,13 +481,7 @@
                 } else if (position === 1) {
                     slide.classList.add('next');
                 } else {
-                    if (position < 0) {
-                        slide.style.transform = `translateX(-150%) scale(0.6)`;
-                    } else {
-                        slide.style.transform = `translateX(150%) scale(0.6)`;
-                    }
-                    slide.style.opacity = '0';
-                    slide.style.zIndex = 1;
+                    slide.classList.add('hidden');
                 }
                 
                 if (position === 0) {
@@ -633,9 +651,57 @@
             }, 5000);
         }
 
+        // Smooth scrolling animation
+        function smoothScrollTo(targetId) {
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                const headerHeight = document.querySelector('header').offsetHeight;
+                const targetPosition = targetElement.offsetTop - headerHeight - 20;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // Scroll animation observer
+        function initScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections for fade-in animation
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.add('fade-in');
+                observer.observe(section);
+            });
+        }
+
+        // Initialize everything when page loads
         window.onload = function() {
             preloadImages();
             renderCarousel();
+            initScrollAnimations();
+            
+            // Add smooth scrolling to navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    smoothScrollTo(targetId);
+                });
+            });
+
             if (window.innerWidth < 640) {
                 document.getElementById('nav-prev').style.display = 'none';
                 document.getElementById('nav-next').style.display = 'none';
