@@ -10,17 +10,20 @@ const LocomotiveCard = ({ locomotive, isCurrent }) => {
       transform-style-preserve-3d
     `}>
       <div className="flex flex-col h-full">
-        <div className="relative w-full h-48 sm:h-64 mb-4 overflow-hidden rounded-lg">
+        <div className="relative w-full h-64 sm:h-80 mb-4 overflow-hidden rounded-lg">
           <Image
             src={`/images/locomotives/${locomotive.file}`}
             alt={locomotive.name}
-            layout="fill"
-            objectFit="cover"
+            fill={true}
+            sizes="(max-width: 768px) 90vw, 50vw"
             className={`transition-transform duration-700 ease-out 
               ${isCurrent ? 'scale-105 rotate-x-0' : 'scale-100 rotate-x-3'} 
               hover:scale-110
             `}
-            style={{ transform: `translateZ(20px)` }}
+            style={{ 
+              transform: `translateZ(20px)`,
+              objectFit: 'cover'
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
         </div>
