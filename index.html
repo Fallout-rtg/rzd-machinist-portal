@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демо-портал машиниста | РЖД</title>
+    <meta name="description" content="Современный информационный портал о профессии машиниста поезда в России. Карьера, история, техника.">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rzd-red': '#E30613',
+                        'rzd-white': '#FFFFFF',
+                        'rzd-gray': '#F5F5F5',
+                    },
+                    fontFamily: {
+                        sans: ['Arial', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'red-glow': '0 0 10px rgba(227, 6, 19, 0.7)',
+                    },
+                },
+            },
+        }
+    </script>
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Включение 3D-эффекта для карусели */
+        .carousel-container {
+            perspective: 1200px;
+        }
+        .loco-card {
+            transition: transform 0.7s, opacity 0.7s, box-shadow 0.7s, filter 0.7s;
+            transform-style: preserve-3d;
+        }
+    </style>
+</head>
+
+<body class="bg-rzd-white text-gray-800 antialiased">
+
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-rzd-white bg-opacity-95 shadow-lg backdrop-blur-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <a href="#home" class="flex items-center space-x-2">
+            <svg class="h-8 w-8 text-rzd-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 17l10 5 10-5M2 17l10-5 10 5M2 17V7l10-5 10 5v10" />
+              <polyline points="9 10 12 12 15 10" />
+            </svg>
+            <span class="text-xl font-bold tracking-tight text-gray-900 hidden sm:block">Машинист РЖД</span>
+          </a>
+          <div class="flex space-x-6">
+            <a href="#locomotives" class="text-gray-600 hover:text-rzd-red transition duration-300 font-medium">Локомотивы</a>
+            <a href="#career" class="text-gray-600 hover:text-rzd-red transition duration-300 font-medium">Карьера</a>
+            <a href="#contact" class="text-rzd-red font-semibold hover:opacity-80 transition duration-300 border-b-2 border-rzd-red">Связь</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+        <section 
+            id="home" 
+            class="relative pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden bg-rzd-white"
+        >
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+                <h1 class="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight mb-4">
+                    <span class="text-gray-900">Демо-портал</span> <br class="sm:hidden" />
+                    <span class="text-rzd-red block">Машиниста</span>
+                </h1>
+                <p class="text-xl sm:text-2xl text-gray-600 font-light max-w-3xl mx-auto">
+                    Ваш путеводитель в мир современных и исторических локомотивов, карьерных возможностей и обучения в сфере <span class="font-semibold">Российских Железных Дорог</span>.
+                </p>
+                <a 
+                    href="#locomotives" 
+                    class="mt-8 inline-block px-8 py-3 bg-rzd-red text-white text-lg font-semibold rounded-full shadow-lg hover:bg-rzd-red/90 transition duration-300 transform hover:scale-105"
+                >
+                    Изучить Локомотивы
+                </a>
+            </div>
+            
+            <div class="absolute top-0 right-0 opacity-10 blur-sm w-full h-full flex items-center justify-center">
+                <svg class="w-96 h-96 sm:w-[500px] sm:h-[500px] lg:w-[800px] lg:h-[800px] text-rzd-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="2" x2="12" y2="22" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+                </svg>
+            </div>
+        </section>
+
+        <section class="py-16 md:py-24 bg-rzd-gray overflow-hidden" id="locomotives">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-center mb-12 text-gray-900">
+                    Техника <span class="text-rzd-red">наших дорог</span>
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="p-6 bg-white rounded-xl shadow-2xl border-2 border-rzd-red/70 shadow-red-glow">
+                        <div class="relative w-full h-[300px] sm:h-[250px] mb-4 overflow-hidden rounded-lg">
+                            <img src="/images/locomotives/ep20.jpg" alt="ЭП20" class="absolute inset-0 w-full h-full object-cover scale-105" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                        </div>
+                        <h3 class="text-2xl font-extrabold mb-2 text-rzd-red">ЭП20</h3>
+                        <div class="space-y-1 text-base">
+                            <p class="flex justify-between items-center text-gray-600"><span class="font-semibold">Тип:</span> Электровоз</p>
+                            <p class="flex justify-between items-center text-gray-600"><span class="font-semibold">Начало выпуска:</span> 2011</p>
+                        </div>
+                        <p class="mt-4 text-base text-gray-700">Двухсистемный скоростной пассажирский локомотив. Способен работать как на постоянном, так и на переменном токе.</p>
+                    </div>
+
+                    <div class="p-6 bg-white rounded-xl shadow-lg border-2 border-gray-200/50">
+                        <div class="relative w-full h-[300px] sm:h-[250px] mb-4 overflow-hidden rounded-lg">
+                            <img src="/images/locomotives/vl80s.jpg" alt="ВЛ80С" class="absolute inset-0 w-full h-full object-cover" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                        </div>
+                        <h3 class="text-2xl font-extrabold mb-2 text-gray-800">ВЛ80С</h3>
+                        <div class="space-y-1 text-base">
+                            <p class="flex justify-between items-center text-gray-600"><span class="font-semibold">Тип:</span> Электровоз</p>
+                            <p class="flex justify-between items-center text-gray-600"><span class="font-semibold">Начало выпуска:</span> 1961</p>
+                        </div>
+                        <p class="mt-4 text-base text-gray-600">Самый массовый грузовой электровоз переменного тока. Надежный "тягач" советских и российских железных дорог на протяжении десятилетий.</p>
+                    </div>
+
+                    <div class="p-6 bg-white rounded-xl shadow-lg border-2 border-gray-200/50">
+                        <div class="relative w-full h-[300px] sm:h-[250px] mb-4 overflow-hidden rounded-lg">
+                            <img src="/images/locomotives/2te25km.jpg" alt="2ТЭ25КМ" class="absolute inset-0 w-full h-full object-cover" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                        </div>
+                        <h3 class="text-2xl font-extrabold mb-2 text-gray-800">2ТЭ25КМ</h3>
+                        <div class="space-y-1 text-base">
+                            <p class="flex justify-between items-center text-gray-600"><span class="font-semibold">Тип:</span> Тепловоз</p>
+                            <p class="flex justify-between items-center text-gray-600"><span class="font-semibold">Начало выпуска:</span> 2014</p>
+                        </div>
+                        <p class="mt-4 text-base text-gray-600">Современный грузовой тепловоз, разработанный для тяжелых условий. Мощность и экономичность для неэлектрифицированных линий.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="py-16 md:py-24 bg-rzd-white" id="career">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-center mb-12 text-gray-900">
+                    Как стать <span class="text-rzd-red">Машинистом</span>
+                </h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="p-6 bg-rzd-gray rounded-xl shadow-lg border-l-4 border-rzd-red hover:shadow-xl transition duration-300">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">1. Получение образования</h3>
+                        <p class="text-gray-700">
+                            Основной путь — это среднее профессиональное образование в **железнодорожных колледжах и техникумах** (например, специальности «Эксплуатация и ремонт локомотивов»).
+                        </p>
+                        <ul class="mt-3 list-disc list-inside text-sm text-gray-600">
+                            <li>МИИТ (филиалы)</li>
+                            <li>Петербургский ГУПС (колледж)</li>
+                            <li>Уральский техникум железнодорожного транспорта</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="p-6 bg-rzd-gray rounded-xl shadow-lg border-l-4 border-rzd-red hover:shadow-xl transition duration-300">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">2. Работа Помощником</h3>
+                        <p class="text-gray-700">
+                            После окончания учебного заведения карьера начинается с должности **помощника машиниста**. Это период обязательной практики, изучения техники и получения опыта под руководством машиниста.
+                        </p>
+                    </div>
+                    
+                    <div class="p-6 bg-rzd-gray rounded-xl shadow-lg border-l-4 border-rzd-red hover:shadow-xl transition duration-300">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">3. Аттестация и допуск</h3>
+                        <p class="text-gray-700">
+                            После наработки необходимого стажа (обычно от 1 года) и успешного прохождения обучения и строгой медицинской комиссии, помощник сдает **квалификационные экзамены** для получения права управления локомотивом.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16 md:py-24 bg-rzd-white" id="contact">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-center mb-12 text-gray-900">
+                    Свяжитесь с <span class="text-rzd-red">нами</span>
+                </h2>
+                <form id="contact-form" action="https://formspree.io/f/xbjnedzp" method="POST" class="bg-rzd-gray p-8 rounded-xl shadow-2xl border-t-4 border-rzd-red">
+                    
+                    <div class="mb-6">
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Ваша Почта (только Gmail/Yandex)
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-rzd-red focus:border-rzd-red transition duration-300"
+                            placeholder="example@gmail.com"
+                            required
+                        />
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="message" class="block text-sm font-medium text-gray-700 mb-2">
+                            Сообщение
+                        </label>
+                        <textarea
+                            id="message"
+                            name="message"
+                            rows="5"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-rzd-red focus:border-rzd-red transition duration-300"
+                            placeholder="Расскажите о себе или задайте вопрос..."
+                            required
+                        ></textarea>
+                        </div>
+
+                    <p id="form-status" class="mb-4 text-center text-sm font-medium text-red-600"></p>
+
+                    <button
+                        type="submit"
+                        class="w-full py-3 rounded-lg text-lg font-semibold transition duration-300 transform bg-rzd-red text-white hover:bg-rzd-red/90 hover:scale-[1.01] shadow-xl"
+                    >
+                        Отправить Сообщение
+                    </button>
+
+                </form>
+            </div>
+        </section>
+        
+        <footer class="bg-gray-900 text-white py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+                <p>&copy; 2025 Демо-портал машиниста. Проект выполнен в стилистике РЖД.</p>
+                <p class="mt-1">Технологии: HTML, Tailwind CSS (CDN).</p>
+            </div>
+        </footer>
+    </main>
+    
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const statusMessage = document.getElementById('form-status');
+            const button = this.querySelector('button[type="submit"]');
+
+            // Простая валидация почты (для демонстрации, без проверки Yandex/Gmail)
+            const email = document.getElementById('email').value;
+            if (email.trim() === "") {
+                statusMessage.textContent = '❌ Пожалуйста, введите почту.';
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Отправка...';
+            statusMessage.textContent = '';
+
+            try {
+                // Использование Formspree для отправки формы без бэкенда
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    statusMessage.textContent = '✅ Сообщение успешно отправлено! Мы свяжемся с вами.';
+                    this.reset();
+                } else {
+                    statusMessage.textContent = '❌ Ошибка отправки. Пожалуйста, попробуйте позже.';
+                }
+            } catch (error) {
+                statusMessage.textContent = '❌ Произошла ошибка сети.';
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Отправить Сообщение';
+            }
+        });
+    </script>
+</body>
+</html>
