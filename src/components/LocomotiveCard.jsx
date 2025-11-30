@@ -10,7 +10,7 @@ const LocomotiveCard = ({ locomotive, isCurrent }) => {
       transform-style-preserve-3d
     `}>
       <div className="flex flex-col h-full">
-        <div className="relative w-full h-64 sm:h-80 mb-4 overflow-hidden rounded-lg">
+        <div className="relative w-full h-[300px] sm:h-[400px] mb-4 overflow-hidden rounded-lg">
           <Image
             src={`/images/locomotives/${locomotive.file}`}
             alt={locomotive.name}
