@@ -167,18 +167,9 @@
             transform: translateY(0);
         }
         
-        /* Дополнительные стили для мобильного меню */
-        @media (max-width: 1023px) {
-            #nav-menu {
-                border-top: 1px solid #eee;
-                padding: 1rem;
-                top: 70px; /* Высота шапки */
-            }
-            #nav-menu a {
-                display: block;
-                width: 100%;
-                margin-bottom: 0.5rem;
-            }
+        .file-error {
+            border-color: #EF4444;
+            background-color: #FEF2F2;
         }
     </style>
 </head>
@@ -209,16 +200,12 @@
                 <span class="sm:hidden text-rzd-red">Демо-портал</span>
             </h1>
             
-            <button id="menu-button" class="lg:hidden text-gray-800 focus:outline-none p-2 rounded-md hover:bg-gray-100">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-            </button>
-            
-            <nav id="nav-menu" class="hidden lg:flex flex-col lg:flex-row lg:items-center absolute lg:static top-20 left-0 w-full lg:w-auto bg-white lg:bg-transparent shadow-lg lg:shadow-none z-20 transition-all duration-300">
+            <nav class="flex space-x-2 sm:space-x-4">
                 <a href="#intro" class="nav-link">Главная</a>
                 <a href="#locomotives" class="nav-link">Локомотивы</a>
                 <a href="#crew-life" class="nav-link">Жизнь машиниста</a>
                 <a href="#education" class="nav-link">Обучение</a>
-                <button onclick="openModal()" class="px-5 py-2 text-white bg-rzd-red rounded-full hover:bg-red-700 transition duration-150 shadow-xl shadow-red-300/50 transform hover:scale-105 ml-4 w-full lg:w-auto mt-2 lg:mt-0">
+                <button onclick="openModal()" class="px-5 py-2 text-white bg-rzd-red rounded-full hover:bg-red-700 transition duration-150 shadow-xl shadow-red-300/50 transform hover:scale-105 ml-4">
                     Обратная связь
                 </button>
             </nav>
@@ -243,10 +230,10 @@
                 <div id="carousel-track" class="carousel-track">
                 </div>
 
-                <button id="nav-prev" class="nav-overlay left-0 flex items-center justify-start p-4 hidden md:flex" onclick="navigateCarousel(currentSlide - 1, true)">
+                <button id="nav-prev" class="nav-overlay left-0 flex items-center justify-start p-4" onclick="navigateCarousel(currentSlide - 1, true)">
                     <svg class="w-8 h-8 text-rzd-red opacity-50 hover:opacity-100 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
-                <button id="nav-next" class="nav-overlay right-0 flex items-center justify-end p-4 hidden md:flex" onclick="navigateCarousel(currentSlide + 1, true)">
+                <button id="nav-next" class="nav-overlay right-0 flex items-center justify-end p-4" onclick="navigateCarousel(currentSlide + 1, true)">
                     <svg class="w-8 h-8 text-rzd-red opacity-50 hover:opacity-100 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                 </button>
             </div>
@@ -348,7 +335,7 @@
                 <button onclick="closeModal()" class="text-gray-500 hover:text-rzd-red text-3xl leading-none">&times;</button>
             </div>
             
-            <form id="feedback-form" onsubmit="submitForm(event)">
+            <form id="feedback-form" onsubmit="submitForm(event)" enctype="multipart/form-data">
                 <div class="mb-4">
                     <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Ваша почта (только Gmail/Yandex)</label>
                     <input type="email" id="email" name="email" required placeholder="example@gmail.com" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rzd-red focus:border-rzd-red transition duration-150">
@@ -360,11 +347,15 @@
                     <textarea id="message" name="message" required rows="4" placeholder="Напишите ваш вопрос или отзыв..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rzd-red focus:border-rzd-red transition duration-150"></textarea>
                 </div>
 
-                <div class="flex items-center space-x-3 mb-4">
-                    <input type="file" id="file-attachments" name="attachments" multiple class="hidden" onchange="handleFileUpload()">
-                    <button type="button" onclick="document.getElementById('file-attachments').click()" class="flex items-center justify-center w-12 h-12 bg-rzd-red text-white rounded-full text-2xl font-bold hover:bg-red-700 transition duration-150 transform hover:rotate-45 shadow-md">
-                        +
-                    </button>
+                <div class="mb-4">
+                    <div class="flex items-center space-x-3">
+                        <input type="file" id="file-attachments" name="attachments" multiple class="hidden" onchange="handleFileUpload()">
+                        <button type="button" onclick="document.getElementById('file-attachments').click()" class="flex items-center justify-center w-12 h-12 bg-rzd-red text-white rounded-full text-2xl font-bold hover:bg-red-700 transition duration-150 transform hover:rotate-45 shadow-md">
+                            +
+                        </button>
+                        <span class="text-sm text-gray-600">Прикрепить файлы (макс. 50MB каждый)</span>
+                    </div>
+                    <p id="file-error" class="text-xs text-red-500 mt-2 hidden"></p>
                 </div>
                 
                 <div id="file-list" class="mb-6 space-y-2">
@@ -385,18 +376,13 @@
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <span>Сообщение успешно отправлено!</span>
     </div>
-    
-    <div id="error-notification" class="notification fixed bottom-5 right-5 bg-red-600 text-white p-4 rounded-lg shadow-xl z-50 flex items-center space-x-3">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        <span>Произошла ошибка при отправке.</span>
-    </div>
 
     <script>
         const LOCOMOTIVES = [
             { 
                 name: "ЧС2", 
                 type: "Электровоз", 
-                year: 1:958, 
+                year: 1958, 
                 features: "Легенда пассажирских перевозок СССР, прозванный \"Чебурашкой\". Это был первый советский серийный шестиосный пассажирский электровоз. Обладал высокой надежностью и скоростью до 160 км/ч.", 
                 file: "chs2.jpg" 
             },
@@ -434,13 +420,14 @@
         let autoScrollInterval;
         const CAROUSEL_DURATION = 5000;
         const MANUAL_INTERACTION_DELAY = 10000;
+        const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
         const track = document.getElementById('carousel-track');
         const paginationContainer = document.getElementById('carousel-pagination');
         const detailsContainer = document.getElementById('locomotive-details');
         const fileListContainer = document.getElementById('file-list');
         const fileInput = document.getElementById('file-attachments');
-        let attachedFiles = [];
+        const fileError = document.getElementById('file-error');
         
         function preloadImages() {
             LOCOMOTIVES.forEach(loco => {
@@ -558,7 +545,6 @@
 
         const modal = document.getElementById('feedback-modal');
         const notification = document.getElementById('success-notification');
-        const errorNotification = document.getElementById('error-notification');
         const form = document.getElementById('feedback-form');
         const emailInput = document.getElementById('email');
         const emailError = document.getElementById('email-error');
@@ -575,19 +561,11 @@
             document.body.style.overflow = '';
         }
 
-        function showNotification(isSuccess, message) {
-            const el = isSuccess ? notification : errorNotification;
-            const messageSpan = el.querySelector('span');
-            if (message) {
-                messageSpan.textContent = message;
-            } else {
-                messageSpan.textContent = isSuccess ? 'Сообщение успешно отправлено!' : 'Произошла ошибка при отправке.';
-            }
-            
-            el.classList.add('active');
+        function showNotification() {
+            notification.classList.add('active');
             setTimeout(() => {
-                el.classList.remove('active');
-            }, 5000);
+                notification.classList.remove('active');
+            }, 4000);
         }
 
         function validateEmail(email) {
@@ -595,40 +573,66 @@
             return regex.test(email);
         }
 
+        function validateFiles(files) {
+            for (let file of files) {
+                if (file.size > MAX_FILE_SIZE) {
+                    fileError.textContent = `Файл "${file.name}" превышает максимальный размер 50MB`;
+                    fileError.classList.remove('hidden');
+                    fileInput.classList.add('file-error');
+                    return false;
+                }
+            }
+            fileError.classList.add('hidden');
+            fileInput.classList.remove('file-error');
+            return true;
+        }
+
         function handleFileUpload() {
             fileListContainer.innerHTML = '';
-            attachedFiles = Array.from(fileInput.files);
+            const files = fileInput.files;
 
-            if (attachedFiles.length > 0) {
+            if (!validateFiles(files)) {
+                return;
+            }
+
+            if (files.length > 0) {
                 const title = document.createElement('p');
                 title.className = 'text-sm font-semibold text-gray-700 mb-2';
-                title.textContent = `Прикрепленные файлы (${attachedFiles.length}):`;
+                title.textContent = `Прикрепленные файлы (${files.length}):`;
                 fileListContainer.appendChild(title);
 
-                attachedFiles.forEach(file => {
+                Array.from(files).forEach(file => {
                     const item = document.createElement('div');
-                    item.className = 'flex items-center space-x-2 text-sm text-gray-600 bg-gray-100 p-2 rounded-lg';
+                    item.className = 'flex items-center justify-between text-sm text-gray-600 bg-gray-100 p-2 rounded-lg';
                     item.innerHTML = `
-                        <svg class="w-4 h-4 text-rzd-red" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path></svg>
-                        <span>${file.name}</span>
-                        <span class="text-xs text-gray-400">(${(file.size / 1024 / 1024).toFixed(2)} МБ)</span>
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-4 h-4 text-rzd-red" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path></svg>
+                            <span>${file.name}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-gray-400">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                            <button type="button" onclick="removeFile('${file.name}')" class="text-red-500 hover:text-red-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
                     `;
                     fileListContainer.appendChild(item);
                 });
             }
         }
-        
-        function readFileAsBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    // Извлекаем только Base64 строку (после запятой)
-                    const base64String = reader.result.split(',')[1];
-                    resolve(base64String);
-                };
-                reader.onerror = error => reject(error);
-                reader.readAsDataURL(file);
-            });
+
+        function removeFile(fileName) {
+            const dt = new DataTransfer();
+            const files = fileInput.files;
+            
+            for (let file of files) {
+                if (file.name !== fileName) {
+                    dt.items.add(file);
+                }
+            }
+            
+            fileInput.files = dt.files;
+            handleFileUpload();
         }
 
         async function submitForm(event) {
@@ -643,62 +647,56 @@
                 emailError.classList.add('hidden');
             }
 
-            submitButton.disabled = true;
-            spinner.classList.remove('hidden');
-            
-            const filesToSend = [];
-            for (const file of attachedFiles) {
-                try {
-                    const data = await readFileAsBase64(file);
-                    filesToSend.push({
-                        name: file.name,
-                        size: file.size,
-                        type: file.type,
-                        data: data // Base64-данные файла
-                    });
-                } catch (error) {
-                    console.error('Error reading file:', file.name, error);
-                    showNotification(false, `Ошибка при чтении файла: ${file.name}`);
-                    submitButton.disabled = false;
-                    spinner.classList.add('hidden');
-                    return; 
-                }
+            const files = fileInput.files;
+            if (!validateFiles(files)) {
+                return;
             }
 
-            const formData = {
-                email: emailInput.value,
-                message: document.getElementById('message').value,
-                attachments: filesToSend
-            };
+            submitButton.disabled = true;
+            spinner.classList.remove('hidden');
+
+            const formData = new FormData();
+            formData.append('email', emailInput.value);
+            formData.append('message', document.getElementById('message').value);
+            
+            for (let file of files) {
+                formData.append('attachments', file);
+            }
 
             try {
                 const response = await fetch('/api/bot', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
+                    body: formData
                 });
 
                 const result = await response.json();
 
-                if (response.ok && result.success) {
+                if (result.success) {
                     form.reset();
                     fileListContainer.innerHTML = '';
-                    attachedFiles = [];
                     closeModal();
-                    showNotification(true);
+                    showNotification();
                 } else {
-                    showNotification(false, result.error || "Произошла ошибка при отправке. Пожалуйста, попробуйте позже.");
+                    showErrorModal(result.error || "Произошла ошибка при отправке. Пожалуйста, попробуйте позже.");
                 }
 
             } catch (error) {
                 console.error("Fetch Error:", error);
-                showNotification(false, "Произошла критическая ошибка сети. Проверьте подключение.");
+                showErrorModal("Произошла критическая ошибка сети. Проверьте подключение.");
             } finally {
                 submitButton.disabled = false;
                 spinner.classList.add('hidden');
             }
+        }
+
+        function showErrorModal(message) {
+            const errorElement = document.createElement('div');
+            errorElement.className = 'fixed top-0 left-0 right-0 p-4 text-center bg-red-600 text-white font-bold z-50 shadow-lg';
+            errorElement.textContent = message;
+            document.body.appendChild(errorElement);
+            setTimeout(() => {
+                errorElement.remove();
+            }, 5000);
         }
 
         function smoothScrollTo(targetId) {
@@ -712,31 +710,6 @@
                     behavior: 'smooth'
                 });
             }
-        }
-        
-        function initMobileMenu() {
-            const menuButton = document.getElementById('menu-button');
-            const navMenu = document.getElementById('nav-menu');
-
-            if (menuButton) {
-                menuButton.addEventListener('click', () => {
-                    navMenu.classList.toggle('hidden');
-                    if (!navMenu.classList.contains('hidden')) {
-                         navMenu.classList.add('p-4');
-                    } else {
-                         navMenu.classList.remove('p-4');
-                    }
-                });
-            }
-
-            document.querySelectorAll('#nav-menu a, #nav-menu button').forEach(el => {
-                el.addEventListener('click', () => {
-                    if (window.innerWidth < 1024) {
-                        navMenu.classList.add('hidden');
-                        navMenu.classList.remove('p-4');
-                    }
-                });
-            });
         }
 
         function initScrollAnimations() {
@@ -763,7 +736,6 @@
             preloadImages();
             renderCarousel();
             initScrollAnimations();
-            initMobileMenu();
             
             document.querySelectorAll('a[href^="#"]').forEach(link => {
                 link.addEventListener('click', function(e) {
@@ -772,6 +744,11 @@
                     smoothScrollTo(targetId);
                 });
             });
+
+            if (window.innerWidth < 640) {
+                document.getElementById('nav-prev').style.display = 'none';
+                document.getElementById('nav-next').style.display = 'none';
+            }
         };
     </script>
 </body>
