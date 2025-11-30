@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Демо-портал машиниста</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+    <div class="logo">RZD Machinist Portal</div>
+    <nav>
+        <ul class="tabs">
+            <li data-tab="home" class="active">Главная</li>
+            <li data-tab="about">О профессии</li>
+            <li data-tab="locomotives">Локомотивы</li>
+        </ul>
+        <button id="contact-btn">Связаться</button>
+    </nav>
+</header>
+
+<main>
+    <!-- Главная вкладка -->
+    <section class="tab-content active" id="home">
+        <div class="intro">
+            <h1>Демо-портал машиниста</h1>
+            <p>Узнайте больше о профессии машиниста, истории локомотивов и современной железной дороге России.</p>
+        </div>
+
+```
+    <div class="carousel-section">
+        <div class="carousel-container">
+            <div class="carousel">
+                <div class="slide" data-title="ЧС2" data-year="1958" data-info='Легенда пассажирских перевозок, "Чебурашка".'>
+                    <img src="images/locomotives/chs2.jpg" alt="ЧС2">
+                </div>
+                <div class="slide" data-title="ВЛ80С" data-year="1961" data-info="Самый массовый грузовой локомотив СССР/РФ.">
+                    <img src="images/locomotives/vl80s.jpg" alt="ВЛ80С">
+                </div>
+                <div class="slide" data-title="2ТЭ25КМ" data-year="2014" data-info='Современный мощный грузовой тепловоз, "Витязь".'>
+                    <img src="images/locomotives/2te25km.jpg" alt="2ТЭ25КМ">
+                </div>
+                <div class="slide" data-title="ЭП20" data-year="2011" data-info="Современный двухсистемный скоростной пассажирский.">
+                    <img src="images/locomotives/ep20.jpg" alt="ЭП20">
+                </div>
+                <div class="slide" data-title='"Ласточка" (ЭС2Г)' data-year="2014" data-info="Современный пригородный и межрегиональный поезд.">
+                    <img src="images/locomotives/lastochka.jpg" alt="Ласточка">
+                </div>
+            </div>
+        </div>
+        <div class="carousel-info">
+            <h2 id="loc-title"></h2>
+            <p id="loc-year"></p>
+            <p id="loc-info"></p>
+        </div>
+        <div class="carousel-dots"></div>
+    </div>
+</section>
+
+<!-- О профессии -->
+<section class="tab-content" id="about">
+    <h2>Профессия машиниста</h2>
+    <p>Машинист – это человек, управляющий локомотивом, обеспечивающий безопасность и своевременность перевозок.  
+    В России обучение доступно в железнодорожных техникумах и колледжах, а также через корпоративные программы РЖД.</p>
+    <ul>
+        <li>Требования: ответственность, внимательность, техническое образование.</li>
+        <li>Средний доход: зависит от региона и категории локомотива.</li>
+        <li>Карьерный рост: от помощника машиниста до инструктора и диспетчера.</li>
+    </ul>
+</section>
+
+<!-- Локомотивы -->
+<section class="tab-content" id="locomotives">
+    <h2>Локомотивы</h2>
+    <div class="locomotive-cards">
+        <div class="card">
+            <img src="images/locomotives/chs2.jpg" alt="ЧС2">
+            <h3>ЧС2</h3>
+            <p>Электровоз, 1958. Легенда пассажирских перевозок, "Чебурашка".</p>
+        </div>
+        <div class="card">
+            <img src="images/locomotives/vl80s.jpg" alt="ВЛ80С">
+            <h3>ВЛ80С</h3>
+            <p>Электровоз, 1961. Самый массовый грузовой локомотив СССР/РФ.</p>
+        </div>
+        <div class="card">
+            <img src="images/locomotives/2te25km.jpg" alt="2ТЭ25КМ">
+            <h3>2ТЭ25КМ</h3>
+            <p>Тепловоз, 2014. Современный мощный грузовой тепловоз, "Витязь".</p>
+        </div>
+        <div class="card">
+            <img src="images/locomotives/ep20.jpg" alt="ЭП20">
+            <h3>ЭП20</h3>
+            <p>Электровоз, 2011. Современный двухсистемный скоростной пассажирский.</p>
+        </div>
+        <div class="card">
+            <img src="images/locomotives/lastochka.jpg" alt="Ласточка">
+            <h3>"Ласточка" (ЭС2Г)</h3>
+            <p>Электропоезд, 2014. Современный пригородный и межрегиональный поезд.</p>
+        </div>
+    </div>
+</section>
+```
+
+</main>
+
+<!-- Модальная форма обратной связи -->
+
+<div id="contact-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Связаться с нами</h2>
+        <form id="contact-form" enctype="multipart/form-data">
+            <input type="email" name="email" placeholder="Почта (Gmail или Yandex)" required pattern="^[a-zA-Z0-9._%+-]+@(gmail\.com|yandex\.ru)$">
+            <textarea name="message" placeholder="Сообщение" required></textarea>
+            <label class="file-upload">
+                <span>+</span> Прикрепить файлы
+                <input type="file" name="attachments[]" multiple>
+            </label>
+            <button type="submit">Отправить</button>
+        </form>
+        <div id="form-status"></div>
+    </div>
+</div>
+
+<script src="js/script.js"></script>
+
+<script src="js/carousel.js"></script>
+
+<script src="js/tabs.js"></script>
+
+<script src="js/contact.js"></script>
+
+</body>
+</html>
