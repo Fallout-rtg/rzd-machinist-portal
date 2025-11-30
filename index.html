@@ -4,64 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Демо-портал машиниста — Путь к профессии</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <style>
         :root {
             --rzd-red: #D52B1E;
-            --bg-light: #F0F4F8; 
-            --text-dark: #1F2937; /* Почти черный для заголовков */
+            --bg-light: #F0F4F8;
+            --text-dark: #1F2937;
         }
 
-        /* Общие стили и шрифт */
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-light);
             color: var(--text-dark);
             overflow-x: hidden;
-            scroll-behavior: smooth; /* Плавный переход при прокрутке к якорям */
+            scroll-behavior: smooth;
         }
 
-        /* Улучшенная стилизация хедера */
         .enhanced-header {
-            border-bottom: 6px solid var(--rzd-red); /* Акцентная красная полоса */
+            border-bottom: 6px solid var(--rzd-red);
         }
 
-        /* Стилизация навигационных кнопок */
         .nav-link {
-            /* Базовый черный цвет и жирный шрифт */
             color: var(--text-dark);
-            font-weight: 600; 
+            font-weight: 600;
             padding: 0.5rem 1rem;
-            border-radius: 9999px; /* Полностью закругленные */
+            border-radius: 9999px;
             transition: all 0.3s ease-out;
             position: relative;
         }
 
-        /* Эффект при наведении */
         .nav-link:hover {
-            color: var(--rzd-red); /* При наведении становится красным */
-            background-color: rgba(213, 43, 30, 0.08); /* Легкий красный фон */
-            transform: translateY(-2px); /* Небольшое смещение вверх */
+            color: var(--rzd-red);
+            background-color: rgba(213, 43, 30, 0.08);
+            transform: translateY(-2px);
         }
 
-        /* Иконка локомотива в хедере (SVG) */
         .loco-icon {
             transform: rotate(-10deg);
         }
 
-        /* Стили для 3D-карусели */
         #locomotive-carousel {
-            perspective: 1800px; 
+            perspective: 1800px;
             overflow: hidden;
-            height: 350px; 
+            height: 400px;
             position: relative;
         }
 
         .carousel-track {
             display: flex;
-            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             transform-style: preserve-3d;
             height: 100%;
         }
@@ -72,7 +64,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            opacity: 0;
+            opacity: 1;
             transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.8s, scale 0.8s;
             position: absolute;
             top: 0;
@@ -81,14 +73,12 @@
             cursor: pointer;
         }
 
-        /* Стиль для активного слайда */
         .carousel-slide.active {
             opacity: 1;
-            transform: translateX(0) scale(1.05) translateZ(100px); 
+            transform: translateX(0) scale(1.05) translateZ(100px);
             z-index: 10;
         }
 
-        /* Стиль для неактивных слайдов (эффект глубины) */
         .carousel-slide.prev {
             opacity: 0.2;
             transform: translateX(-80%) scale(0.7) rotateY(15deg) translateZ(-200px);
@@ -101,7 +91,6 @@
             z-index: 5;
         }
         
-        /* Прозрачные кнопки-оверлеи для ручного свайпа */
         .nav-overlay {
             position: absolute;
             top: 0;
@@ -113,23 +102,21 @@
             border-radius: 1rem;
         }
         .nav-overlay:hover {
-            background-color: rgba(213, 43, 30, 0.1); 
+            background-color: rgba(213, 43, 30, 0.1);
         }
         #nav-prev { left: 0; }
         #nav-next { right: 0; }
 
-        /* Картинка локомотива - прямоугольная */
         .loco-image {
-            object-fit: cover; 
-            width: 100%;
-            height: 300px; 
-            max-width: 800px;
+            object-fit: cover;
+            width: 95%;
+            height: 350px;
+            max-width: 900px;
             border-radius: 0.75rem;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-            border: 4px solid white; 
+            border: 4px solid white;
         }
 
-        /* Стилизация модального окна и уведомлений (оставлены без изменений) */
         .modal-overlay {
             visibility: hidden;
             opacity: 0;
@@ -161,7 +148,6 @@
 </head>
 <body class="antialiased">
 
-    <!-- Tailwind Config for RZD Red -->
     <script>
         tailwind.config = {
             theme: {
@@ -175,22 +161,18 @@
         }
     </script>
 
-    <!-- Header and Navigation -->
     <header class="bg-white shadow-xl sticky top-0 z-50 enhanced-header">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
             
-            <!-- Logo with new SVG icon -->
             <h1 class="text-2xl font-extrabold text-gray-900 flex items-center">
-                <svg class="w-8 h-8 mr-3 text-rzd-red loco-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Стилизованная иконка поезда/локомотива -->
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15.5V14H8v3.5h3zm4-3.5V17H8v-3.5h7zM12 6.5C8.96 6.5 6.5 8.96 6.5 12h11C17.5 8.96 15.04 6.5 12 6.5z"/>
-                    <path fill="var(--rzd-red)" d="M12 4.5c-3.59 0-6.5 2.91-6.5 6.5h13c0-3.59-2.91-6.5-6.5-6.5z"/>
+                <svg class="w-8 h-8 mr-3" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" rx="6" fill="#D52B1E"/>
+                    <text x="16" y="20" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" font-size="10">РЖД</text>
                 </svg>
                 <span class="text-rzd-red hidden sm:inline">РЖД Портал</span>
                 <span class="sm:hidden text-rzd-red">Демо-портал</span>
             </h1>
             
-            <!-- Navigation Links (Black, Styled) -->
             <nav class="flex space-x-2 sm:space-x-4">
                 <a href="#intro" class="nav-link">Главная</a>
                 <a href="#locomotives" class="nav-link">Локомотивы</a>
@@ -205,7 +187,6 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-        <!-- Intro Section -->
         <section id="intro" class="text-center py-16 sm:py-24 mb-12 bg-white rounded-3xl shadow-2xl border-b-8 border-rzd-red transform hover:translate-y-1 transition duration-300">
             <h2 class="text-4xl sm:text-6xl font-black mb-4 text-gray-900 leading-tight">
                 Машинист — <span class="text-rzd-red">Профессия Будущего</span>
@@ -215,18 +196,13 @@
             </p>
         </section>
 
-        <!-- Locomotive Carousel Section -->
         <section id="locomotives" class="py-10">
-            <!-- Заголовок стал черным (text-gray-900) -->
             <h3 class="text-3xl font-extrabold text-gray-900 mb-10 border-b-4 border-rzd-red pb-3">Интерактивная галерея локомотивов</h3>
             
-            <!-- 3D Carousel Area -->
-            <div id="locomotive-carousel" class="relative mx-auto max-w-4xl">
+            <div id="locomotive-carousel" class="relative mx-auto max-w-5xl">
                 <div id="carousel-track" class="carousel-track">
-                    <!-- Slides will be injected here by JS -->
                 </div>
 
-                <!-- Manual Navigation Overlays -->
                 <button id="nav-prev" class="nav-overlay left-0 flex items-center justify-start p-4" onclick="navigateCarousel(currentSlide - 1, true)">
                     <svg class="w-8 h-8 text-rzd-red opacity-50 hover:opacity-100 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
@@ -235,30 +211,23 @@
                 </button>
             </div>
 
-            <!-- Pagination Dots -->
             <div id="carousel-pagination" class="flex justify-center space-x-3 mt-10">
-                <!-- Dots will be injected here by JS -->
             </div>
 
-            <!-- Locomotive Details Area -->
             <div id="locomotive-details" class="mt-16 bg-white p-8 rounded-2xl shadow-2xl border-l-8 border-rzd-red transform hover:shadow-3xl transition duration-300">
                 <p class="text-center text-gray-500">Выберите локомотив выше, чтобы увидеть подробности.</p>
             </div>
         </section>
 
-        <!-- New Section: Crew Life (Жизнь машиниста) -->
         <section id="crew-life" class="py-10 mt-12">
-            <!-- Заголовок стал черным (text-gray-900) -->
             <h3 class="text-3xl font-extrabold text-gray-900 mb-10 border-b-4 border-rzd-red pb-3">Профессия: Жизнь машиниста</h3>
             
             <div class="bg-white p-8 rounded-2xl shadow-2xl border-l-8 border-rzd-red flex flex-col lg:flex-row items-center space-y-6 lg:space-y-0 lg:space-x-8">
-                <!-- Изображение экипажа (используется файл locomotive_crew.jpg, который нужно загрузить) -->
                 <div class="lg:w-1/2">
                     <img src="images/locomotives/locomotive_crew.jpg" alt="Машинист и его помощник" class="rounded-xl shadow-xl w-full h-auto object-cover" 
                         onerror="this.onerror=null;this.src='https://placehold.co/600x400/1E293B/ffffff?text=Машинист+и+помощник';">
                 </div>
                 
-                <!-- Описание -->
                 <div class="lg:w-1/2">
                     <h4 class="text-2xl font-bold mb-4 text-gray-900">График, Ответственность и Заработок</h4>
                     <p class="text-gray-700 mb-4">
@@ -288,28 +257,23 @@
             </div>
         </section>
 
-        <!-- Education Section -->
         <section id="education" class="py-10 mt-12">
-            <!-- Заголовок стал черным (text-gray-900) -->
             <h3 class="text-3xl font-extrabold text-gray-900 mb-10 border-b-4 border-rzd-red pb-3">Как стать машинистом: Путь к цели</h3>
 
             <div class="grid md:grid-cols-3 gap-8">
                 
-                <!-- Step 1 -->
                 <div class="bg-white p-8 rounded-xl shadow-xl border-t-4 border-gray-200 hover:border-rzd-red transition duration-300">
                     <div class="text-rzd-red text-4xl font-extrabold mb-3">01.</div>
                     <h4 class="text-xl font-bold mb-3">Отраслевое образование</h4>
                     <p class="text-gray-700">Начальное звено — получение среднего специального или высшего образования в профильных учебных заведениях РЖД. Это база знаний о подвижном составе и инфраструктуре.</p>
                 </div>
                 
-                <!-- Step 2 -->
                 <div class="bg-white p-8 rounded-xl shadow-xl border-t-4 border-gray-200 hover:border-rzd-red transition duration-300">
                     <div class="text-rzd-red text-4xl font-extrabold mb-3">02.</div>
                     <h4 class="text-xl font-bold mb-3">Стажировка и практика</h4>
                     <p class="text-gray-700">Обязательный этап — работа помощником машиниста. Минимум два года практики, доскональное изучение маршрутов, правил технической эксплуатации и экстренных действий.</p>
                 </div>
                 
-                <!-- Step 3 -->
                 <div class="bg-white p-8 rounded-xl shadow-xl border-t-4 border-gray-200 hover:border-rzd-red transition duration-300">
                     <div class="text-rzd-red text-4xl font-extrabold mb-3">03.</div>
                     <h4 class="text-xl font-bold mb-3">Квалификационный рост</h4>
@@ -330,7 +294,6 @@
 
     </main>
 
-    <!-- Footer -->
     <footer class="bg-gray-900 text-white py-8 mt-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p>&copy; 2025 Демо-портал машиниста. Все права защищены.</p>
@@ -338,8 +301,6 @@
         </div>
     </footer>
 
-
-    <!-- Feedback Modal (Popup) -->
     <div id="feedback-modal" class="modal-overlay fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center z-50">
         <div class="modal-content bg-white w-full max-w-lg p-8 rounded-xl shadow-3xl">
             <div class="flex justify-between items-center border-b pb-4 mb-6">
@@ -359,18 +320,14 @@
                     <textarea id="message" name="message" required rows="4" placeholder="Напишите ваш вопрос или отзыв..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rzd-red focus:border-rzd-red transition duration-150"></textarea>
                 </div>
 
-                <!-- File Attachment Area (Лимит по файлам снят) -->
                 <div class="flex items-center space-x-3 mb-4">
                     <input type="file" id="file-attachments" name="attachments" multiple class="hidden" onchange="handleFileUpload()">
                     <button type="button" onclick="document.getElementById('file-attachments').click()" class="flex items-center justify-center w-12 h-12 bg-rzd-red text-white rounded-full text-2xl font-bold hover:bg-red-700 transition duration-150 transform hover:rotate-45 shadow-md">
                         +
                     </button>
-                    <span class="text-sm text-gray-600">Прикрепить файлы</span>
                 </div>
                 
-                <!-- Attached File List -->
                 <div id="file-list" class="mb-6 space-y-2">
-                    <!-- Files displayed here -->
                 </div>
 
                 <button type="submit" id="submit-button" class="w-full py-3 bg-rzd-red text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 shadow-xl shadow-red-300/50 flex items-center justify-center">
@@ -384,7 +341,6 @@
         </div>
     </div>
 
-    <!-- Success Notification -->
     <div id="success-notification" class="notification fixed bottom-5 right-5 bg-green-600 text-white p-4 rounded-lg shadow-xl z-50 flex items-center space-x-3">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <span>Сообщение успешно отправлено!</span>
@@ -431,8 +387,8 @@
 
         let currentSlide = 0;
         let autoScrollInterval;
-        const CAROUSEL_DURATION = 5000; // 5 seconds (for auto-scroll)
-        const MANUAL_INTERACTION_DELAY = 10000; // 10 seconds delay after manual interaction
+        const CAROUSEL_DURATION = 5000;
+        const MANUAL_INTERACTION_DELAY = 10000;
 
         const track = document.getElementById('carousel-track');
         const paginationContainer = document.getElementById('carousel-pagination');
@@ -440,37 +396,39 @@
         const fileListContainer = document.getElementById('file-list');
         const fileInput = document.getElementById('file-attachments');
         
-        // --- 1. CAROUSEL LOGIC ---
+        function preloadImages() {
+            LOCOMOTIVES.forEach(loco => {
+                const img = new Image();
+                img.src = `images/locomotives/${loco.file}`;
+            });
+        }
 
         function renderCarousel() {
             track.innerHTML = '';
             paginationContainer.innerHTML = '';
 
             LOCOMOTIVES.forEach((loco, index) => {
-                // Render Slide
                 const slide = document.createElement('div');
                 slide.className = 'carousel-slide absolute top-0 left-0 w-full h-full';
                 slide.style.zIndex = LOCOMOTIVES.length - Math.abs(index - currentSlide);
                 
-                const imageFile = loco.file || 'chs2.jpg'; 
+                const imageFile = loco.file || 'chs2.jpg';
 
                 slide.innerHTML = `
                     <div class="w-full h-full flex items-center justify-center" onclick="navigateCarousel(${index}, true)">
                         <img src="images/locomotives/${imageFile}" alt="${loco.name}" class="loco-image" 
-                            onerror="this.onerror=null;this.src='https://placehold.co/800x300/D52B1E/ffffff?text=${loco.name}'">
+                            onerror="this.onerror=null;this.src='https://placehold.co/900x350/D52B1E/ffffff?text=${loco.name}'">
                     </div>
                 `;
                 track.appendChild(slide);
 
-                // Render Pagination Dot
                 const dot = document.createElement('button');
                 dot.className = 'w-3 h-3 rounded-full bg-gray-400 hover:bg-rzd-red transition duration-300 transform hover:scale-125';
                 dot.setAttribute('data-index', index);
-                dot.onclick = () => navigateCarousel(index, true); // true for manual interaction
+                dot.onclick = () => navigateCarousel(index, true);
                 paginationContainer.appendChild(dot);
             });
 
-            // Set up initial state and start auto-scroll
             updateCarousel(currentSlide);
             startAutoScroll();
         }
@@ -486,14 +444,12 @@
                 
                 let position = index - currentSlide;
                 
-                // Handle wrapping for 3D effect
                 if (position > LOCOMOTIVES.length / 2) {
                     position -= LOCOMOTIVES.length;
                 } else if (position < -LOCOMOTIVES.length / 2) {
                     position += LOCOMOTIVES.length;
                 }
                 
-                // Determine class for 3D effect
                 if (position === 0) {
                     slide.classList.add('active');
                 } else if (position === -1) {
@@ -501,7 +457,6 @@
                 } else if (position === 1) {
                     slide.classList.add('next');
                 } else {
-                    // Hide faraway slides 
                     if (position < 0) {
                         slide.style.transform = `translateX(-150%) scale(0.6)`;
                     } else {
@@ -511,7 +466,6 @@
                     slide.style.zIndex = 1;
                 }
                 
-                // Ensure the active slide is always on top
                 if (position === 0) {
                     slide.style.zIndex = 100;
                 } else {
@@ -519,20 +473,17 @@
                 }
             });
 
-            // Update Pagination
             dots.forEach((dot, index) => {
                 dot.classList.toggle('bg-rzd-red', index === currentSlide);
                 dot.classList.toggle('bg-gray-400', index !== currentSlide);
             });
 
-            // Update Details
             updateDetails(LOCOMOTIVES[currentSlide]);
         }
         
         function navigateCarousel(newIndex, isManual = false) {
             if (isManual) {
                 stopAutoScroll();
-                // Restart auto-scroll after a delay if manually navigated
                 setTimeout(startAutoScroll, MANUAL_INTERACTION_DELAY);
             }
             updateCarousel(newIndex);
@@ -550,7 +501,6 @@
         }
 
         function updateDetails(loco) {
-            // Обновленные детали локомотива
             detailsContainer.innerHTML = `
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b pb-4">
                     <h4 class="text-3xl font-extrabold text-rzd-red">${loco.name}</h4>
@@ -565,8 +515,6 @@
                 </div>
             `;
         }
-
-        // --- 2. MODAL AND FORM LOGIC (Оставлен без изменений) ---
 
         const modal = document.getElementById('feedback-modal');
         const notification = document.getElementById('success-notification');
@@ -594,7 +542,7 @@
         }
 
         function validateEmail(email) {
-            const regex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yandex\.ru)$/i;
+            const regex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yandex\.(ru|com))$/i;
             return regex.test(email);
         }
 
@@ -636,31 +584,39 @@
             submitButton.disabled = true;
             spinner.classList.remove('hidden');
 
-            const formData = new FormData(form);
-            
-            // --- SERVERLESS FUNCTION CALL (Simulated) ---
-            
-            const API_ENDPOINT = "/api/send_message"; 
-            
+            const formData = {
+                email: emailInput.value,
+                message: document.getElementById('message').value,
+                attachments: Array.from(fileInput.files).map(file => ({
+                    name: file.name,
+                    size: file.size,
+                    type: file.type
+                }))
+            };
+
             try {
-                // Simulate network request latency
-                await new Promise(resolve => setTimeout(resolve, 1500)); 
+                const response = await fetch('/api/bot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
 
-                // Simulate successful response from Vercel API
-                const success = true; 
+                const result = await response.json();
 
-                if (success) {
+                if (result.success) {
                     form.reset();
                     fileListContainer.innerHTML = '';
                     closeModal();
                     showNotification();
                 } else {
-                    showErrorModal("Произошла ошибка при отправке. Пожалуйста, попробуйте позже.");
+                    showErrorModal(result.error || "Произошла ошибка при отправке. Пожалуйста, попробуйте позже.");
                 }
 
             } catch (error) {
                 console.error("Fetch Error:", error);
-                showErrorModal("Произошла критическая ошибка сети.");
+                showErrorModal("Произошла критическая ошибка сети. Проверьте подключение.");
             } finally {
                 submitButton.disabled = false;
                 spinner.classList.add('hidden');
@@ -677,12 +633,9 @@
             }, 5000);
         }
 
-
-        // --- 3. INITIALIZATION ---
-
         window.onload = function() {
+            preloadImages();
             renderCarousel();
-            // Optional: Hide arrows/overlays on small mobile screens if needed
             if (window.innerWidth < 640) {
                 document.getElementById('nav-prev').style.display = 'none';
                 document.getElementById('nav-next').style.display = 'none';
