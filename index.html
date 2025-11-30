@@ -166,6 +166,20 @@
             opacity: 1;
             transform: translateY(0);
         }
+        
+        /* Дополнительные стили для мобильного меню */
+        @media (max-width: 1023px) {
+            #nav-menu {
+                border-top: 1px solid #eee;
+                padding: 1rem;
+                top: 70px; /* Высота шапки */
+            }
+            #nav-menu a {
+                display: block;
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -195,12 +209,16 @@
                 <span class="sm:hidden text-rzd-red">Демо-портал</span>
             </h1>
             
-            <nav class="flex space-x-2 sm:space-x-4">
+            <button id="menu-button" class="lg:hidden text-gray-800 focus:outline-none p-2 rounded-md hover:bg-gray-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            
+            <nav id="nav-menu" class="hidden lg:flex flex-col lg:flex-row lg:items-center absolute lg:static top-20 left-0 w-full lg:w-auto bg-white lg:bg-transparent shadow-lg lg:shadow-none z-20 transition-all duration-300">
                 <a href="#intro" class="nav-link">Главная</a>
                 <a href="#locomotives" class="nav-link">Локомотивы</a>
                 <a href="#crew-life" class="nav-link">Жизнь машиниста</a>
                 <a href="#education" class="nav-link">Обучение</a>
-                <button onclick="openModal()" class="px-5 py-2 text-white bg-rzd-red rounded-full hover:bg-red-700 transition duration-150 shadow-xl shadow-red-300/50 transform hover:scale-105 ml-4">
+                <button onclick="openModal()" class="px-5 py-2 text-white bg-rzd-red rounded-full hover:bg-red-700 transition duration-150 shadow-xl shadow-red-300/50 transform hover:scale-105 ml-4 w-full lg:w-auto mt-2 lg:mt-0">
                     Обратная связь
                 </button>
             </nav>
@@ -225,10 +243,10 @@
                 <div id="carousel-track" class="carousel-track">
                 </div>
 
-                <button id="nav-prev" class="nav-overlay left-0 flex items-center justify-start p-4" onclick="navigateCarousel(currentSlide - 1, true)">
+                <button id="nav-prev" class="nav-overlay left-0 flex items-center justify-start p-4 hidden md:flex" onclick="navigateCarousel(currentSlide - 1, true)">
                     <svg class="w-8 h-8 text-rzd-red opacity-50 hover:opacity-100 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
-                <button id="nav-next" class="nav-overlay right-0 flex items-center justify-end p-4" onclick="navigateCarousel(currentSlide + 1, true)">
+                <button id="nav-next" class="nav-overlay right-0 flex items-center justify-end p-4 hidden md:flex" onclick="navigateCarousel(currentSlide + 1, true)">
                     <svg class="w-8 h-8 text-rzd-red opacity-50 hover:opacity-100 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                 </button>
             </div>
@@ -367,13 +385,18 @@
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <span>Сообщение успешно отправлено!</span>
     </div>
+    
+    <div id="error-notification" class="notification fixed bottom-5 right-5 bg-red-600 text-white p-4 rounded-lg shadow-xl z-50 flex items-center space-x-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>Произошла ошибка при отправке.</span>
+    </div>
 
     <script>
         const LOCOMOTIVES = [
             { 
                 name: "ЧС2", 
                 type: "Электровоз", 
-                year: 1958, 
+                year: 1:958, 
                 features: "Легенда пассажирских перевозок СССР, прозванный \"Чебурашкой\". Это был первый советский серийный шестиосный пассажирский электровоз. Обладал высокой надежностью и скоростью до 160 км/ч.", 
                 file: "chs2.jpg" 
             },
@@ -417,8 +440,8 @@
         const detailsContainer = document.getElementById('locomotive-details');
         const fileListContainer = document.getElementById('file-list');
         const fileInput = document.getElementById('file-attachments');
+        let attachedFiles = [];
         
-        // Preload all images
         function preloadImages() {
             LOCOMOTIVES.forEach(loco => {
                 const img = new Image();
@@ -430,7 +453,6 @@
             track.innerHTML = '';
             paginationContainer.innerHTML = '';
 
-            // Create all slides at once and keep them in DOM
             LOCOMOTIVES.forEach((loco, index) => {
                 const slide = document.createElement('div');
                 slide.className = 'carousel-slide absolute top-0 left-0 w-full h-full';
@@ -536,6 +558,7 @@
 
         const modal = document.getElementById('feedback-modal');
         const notification = document.getElementById('success-notification');
+        const errorNotification = document.getElementById('error-notification');
         const form = document.getElementById('feedback-form');
         const emailInput = document.getElementById('email');
         const emailError = document.getElementById('email-error');
@@ -552,11 +575,19 @@
             document.body.style.overflow = '';
         }
 
-        function showNotification() {
-            notification.classList.add('active');
+        function showNotification(isSuccess, message) {
+            const el = isSuccess ? notification : errorNotification;
+            const messageSpan = el.querySelector('span');
+            if (message) {
+                messageSpan.textContent = message;
+            } else {
+                messageSpan.textContent = isSuccess ? 'Сообщение успешно отправлено!' : 'Произошла ошибка при отправке.';
+            }
+            
+            el.classList.add('active');
             setTimeout(() => {
-                notification.classList.remove('active');
-            }, 4000);
+                el.classList.remove('active');
+            }, 5000);
         }
 
         function validateEmail(email) {
@@ -566,15 +597,15 @@
 
         function handleFileUpload() {
             fileListContainer.innerHTML = '';
-            const files = fileInput.files;
+            attachedFiles = Array.from(fileInput.files);
 
-            if (files.length > 0) {
+            if (attachedFiles.length > 0) {
                 const title = document.createElement('p');
                 title.className = 'text-sm font-semibold text-gray-700 mb-2';
-                title.textContent = `Прикрепленные файлы (${files.length}):`;
+                title.textContent = `Прикрепленные файлы (${attachedFiles.length}):`;
                 fileListContainer.appendChild(title);
 
-                Array.from(files).forEach(file => {
+                attachedFiles.forEach(file => {
                     const item = document.createElement('div');
                     item.className = 'flex items-center space-x-2 text-sm text-gray-600 bg-gray-100 p-2 rounded-lg';
                     item.innerHTML = `
@@ -585,6 +616,19 @@
                     fileListContainer.appendChild(item);
                 });
             }
+        }
+        
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    // Извлекаем только Base64 строку (после запятой)
+                    const base64String = reader.result.split(',')[1];
+                    resolve(base64String);
+                };
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
         }
 
         async function submitForm(event) {
@@ -601,15 +645,30 @@
 
             submitButton.disabled = true;
             spinner.classList.remove('hidden');
+            
+            const filesToSend = [];
+            for (const file of attachedFiles) {
+                try {
+                    const data = await readFileAsBase64(file);
+                    filesToSend.push({
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        data: data // Base64-данные файла
+                    });
+                } catch (error) {
+                    console.error('Error reading file:', file.name, error);
+                    showNotification(false, `Ошибка при чтении файла: ${file.name}`);
+                    submitButton.disabled = false;
+                    spinner.classList.add('hidden');
+                    return; 
+                }
+            }
 
             const formData = {
                 email: emailInput.value,
                 message: document.getElementById('message').value,
-                attachments: Array.from(fileInput.files).map(file => ({
-                    name: file.name,
-                    size: file.size,
-                    type: file.type
-                }))
+                attachments: filesToSend
             };
 
             try {
@@ -623,35 +682,25 @@
 
                 const result = await response.json();
 
-                if (result.success) {
+                if (response.ok && result.success) {
                     form.reset();
                     fileListContainer.innerHTML = '';
+                    attachedFiles = [];
                     closeModal();
-                    showNotification();
+                    showNotification(true);
                 } else {
-                    showErrorModal(result.error || "Произошла ошибка при отправке. Пожалуйста, попробуйте позже.");
+                    showNotification(false, result.error || "Произошла ошибка при отправке. Пожалуйста, попробуйте позже.");
                 }
 
             } catch (error) {
                 console.error("Fetch Error:", error);
-                showErrorModal("Произошла критическая ошибка сети. Проверьте подключение.");
+                showNotification(false, "Произошла критическая ошибка сети. Проверьте подключение.");
             } finally {
                 submitButton.disabled = false;
                 spinner.classList.add('hidden');
             }
         }
 
-        function showErrorModal(message) {
-            const errorElement = document.createElement('div');
-            errorElement.className = 'fixed top-0 left-0 right-0 p-4 text-center bg-red-600 text-white font-bold z-50 shadow-lg';
-            errorElement.textContent = message;
-            document.body.appendChild(errorElement);
-            setTimeout(() => {
-                errorElement.remove();
-            }, 5000);
-        }
-
-        // Smooth scrolling animation
         function smoothScrollTo(targetId) {
             const targetElement = document.getElementById(targetId);
             if (targetElement) {
@@ -664,8 +713,32 @@
                 });
             }
         }
+        
+        function initMobileMenu() {
+            const menuButton = document.getElementById('menu-button');
+            const navMenu = document.getElementById('nav-menu');
 
-        // Scroll animation observer
+            if (menuButton) {
+                menuButton.addEventListener('click', () => {
+                    navMenu.classList.toggle('hidden');
+                    if (!navMenu.classList.contains('hidden')) {
+                         navMenu.classList.add('p-4');
+                    } else {
+                         navMenu.classList.remove('p-4');
+                    }
+                });
+            }
+
+            document.querySelectorAll('#nav-menu a, #nav-menu button').forEach(el => {
+                el.addEventListener('click', () => {
+                    if (window.innerWidth < 1024) {
+                        navMenu.classList.add('hidden');
+                        navMenu.classList.remove('p-4');
+                    }
+                });
+            });
+        }
+
         function initScrollAnimations() {
             const observerOptions = {
                 threshold: 0.1,
@@ -680,20 +753,18 @@
                 });
             }, observerOptions);
 
-            // Observe all sections for fade-in animation
             document.querySelectorAll('section').forEach(section => {
                 section.classList.add('fade-in');
                 observer.observe(section);
             });
         }
 
-        // Initialize everything when page loads
         window.onload = function() {
             preloadImages();
             renderCarousel();
             initScrollAnimations();
+            initMobileMenu();
             
-            // Add smooth scrolling to navigation links
             document.querySelectorAll('a[href^="#"]').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -701,11 +772,6 @@
                     smoothScrollTo(targetId);
                 });
             });
-
-            if (window.innerWidth < 640) {
-                document.getElementById('nav-prev').style.display = 'none';
-                document.getElementById('nav-next').style.display = 'none';
-            }
         };
     </script>
 </body>
