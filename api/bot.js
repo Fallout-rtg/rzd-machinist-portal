@@ -16,21 +16,55 @@ module.exports = async (req, res) => {
   const BOT_TOKEN = process.env.BOT_TOKEN;
   const OWNER_ID = process.env.OWNER_ID;
 
+  // Проверяем наличие необходимых переменных
   if (!BOT_TOKEN || !OWNER_ID) {
-    return res.status(500).json({ error: 'Bot configuration missing' });
+    console.error('Missing environment variables:', { 
+      hasBotToken: !!BOT_TOKEN, 
+      hasOwnerId: !!OWNER_ID 
+    });
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Bot configuration missing. Please check environment variables.' 
+    });
   }
 
-  const bot = new Telegraf(BOT_TOKEN);
-
   try {
+    const bot = new Telegraf(BOT_TOKEN);
+
     // Обработка формы обратной связи с сайта
-    if (req.method === 'POST' && req.body.email && req.body.message) {
-      const { email, message, attachments = [] } = req.body;
+    if (req.method === 'POST') {
+      let body = req.body;
+      
+      // Если тело запроса - строка, парсим её
+      if (typeof body === 'string') {
+        try {
+          body = JSON.parse(body);
+        } catch (parseError) {
+          console.error('Error parsing JSON:', parseError);
+          return res.status(400).json({ 
+            success: false, 
+            error: 'Invalid JSON format' 
+          });
+        }
+      }
+
+      const { email, message, attachments = [] } = body;
+
+      // Проверяем обязательные поля
+      if (!email || !message) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Email and message are required fields' 
+        });
+      }
 
       // Валидация email
       const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yandex\.(ru|com))$/i;
       if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Only Gmail and Yandex emails are allowed' });
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Only Gmail and Yandex emails are allowed' 
+        });
       }
 
       // Форматируем список файлов
@@ -40,7 +74,7 @@ module.exports = async (req, res) => {
           ).join('\n')}`
         : '📎 Файлы не прикреплены';
 
-      // Отправляем сообщение владельцу
+      // Отправляем сообщение владельцу (без невалидной кнопки mailto)
       await bot.telegram.sendMessage(
         OWNER_ID,
         `🚂 *НОВОЕ СООБЩЕНИЕ С САЙТА*\n\n` +
@@ -49,27 +83,33 @@ module.exports = async (req, res) => {
         `${attachmentsText}\n\n` +
         `🕒 ${new Date().toLocaleString('ru-RU')}`,
         { 
-          parse_mode: 'Markdown',
-          reply_markup: {
-            inline_keyboard: [[
-              {
-                text: '📧 Ответить на email',
-                url: `mailto:${email}?subject=Ответ с портала машиниста`
-              }
-            ]]
-          }
+          parse_mode: 'Markdown'
         }
       );
 
-      return res.status(200).json({ success: true, message: 'Message sent successfully' });
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Message sent successfully' 
+      });
     }
 
     // Обработка сообщений от Telegram бота
     if (req.body && req.body.message) {
       const { message } = req.body;
+      
+      // Проверяем наличие необходимых полей в сообщении
+      if (!message || !message.chat || !message.from) {
+        console.error('Invalid message structure:', message);
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Invalid message format' 
+        });
+      }
+
       const chatId = message.chat.id;
       const text = message.text || '';
       const userId = message.from.id;
+      const userName = message.from.first_name || 'Пользователь';
 
       // Проверяем, является ли пользователь создателем
       const isOwner = userId.toString() === OWNER_ID;
@@ -95,10 +135,6 @@ module.exports = async (req, res) => {
                   {
                     text: '🚊 Перейти на сайт',
                     url: 'https://rzd-machinist-portal.vercel.app'
-                  },
-                  {
-                    text: '📊 Панель управления',
-                    url: 'https://vercel.com/dashboard'
                   }
                 ]]
               }
@@ -109,24 +145,17 @@ module.exports = async (req, res) => {
           await bot.telegram.sendMessage(
             chatId,
             `🚂 *Демо-портал машиниста РЖД*\n\n` +
-            `*Добро пожаловать в мир железных дорог!*\n\n` +
+            `*Добро пожаловать, ${userName}!*\n\n` +
             `🌐 *О проекте:*\n` +
             `Интерактивный портал, посвященный профессии машиниста и истории российских локомотивов.\n\n` +
             `📖 *Основные разделы:*\n` +
             `• 🚊 Галерея локомотивов с 3D-каруселью\n` +
-            `• 👨‍🔧 Профессия машиниста: особенности и требования\n` +
+            `• 👨‍🔧 Профессия машиниста\n` +
             `• 🎓 Образовательные учреждения РЖД\n` +
-            `• 📜 История железных дорог России\n\n` +
-            `💡 *Технологии:*\n` +
-            `• Современный адаптивный дизайн\n` +
-            `• 3D-анимации и плавные переходы\n` +
-            `• Интерактивная обратная связь\n` +
-            `• Интеграция с Telegram\n\n` +
-            `🔗 *Ссылки:*\n` +
-            `[​](https://rzd-machinist-portal.vercel.app)`, // Невидимый символ для красивого превью
+            `• 📜 История железных дорог\n\n` +
+            `💡 *Для связи используйте форму обратной связи на сайте*`,
             {
               parse_mode: 'Markdown',
-              disable_web_page_preview: false,
               reply_markup: {
                 inline_keyboard: [
                   [
@@ -134,43 +163,27 @@ module.exports = async (req, res) => {
                       text: '🚊 Перейти на сайт',
                       url: 'https://rzd-machinist-portal.vercel.app'
                     }
-                  ],
-                  [
-                    {
-                      text: '📱 Главная страница',
-                      url: 'https://rzd-machinist-portal.vercel.app#intro'
-                    },
-                    {
-                      text: '🚂 Локомотивы',
-                      url: 'https://rzd-machinist-portal.vercel.app#locomotives'
-                    }
-                  ],
-                  [
-                    {
-                      text: '👨‍🔧 Профессия',
-                      url: 'https://rzd-machinist-portal.vercel.app#crew-life'
-                    },
-                    {
-                      text: '🎓 Обучение',
-                      url: 'https://rzd-machinist-portal.vercel.app#education'
-                    }
                   ]
                 ]
               }
             }
           );
 
-          // Отправляем уведомление создателю о новом пользователе
-          await bot.telegram.sendMessage(
-            OWNER_ID,
-            `👤 *Новый пользователь в боте*\n\n` +
-            `🆔 ID: ${userId}\n` +
-            `👤 Имя: ${message.from.first_name || 'Не указано'}\n` +
-            `📛 Фамилия: ${message.from.last_name || 'Не указана'}\n` +
-            `📱 Username: @${message.from.username || 'Не указан'}\n` +
-            `🕒 Время: ${new Date().toLocaleString('ru-RU')}`,
-            { parse_mode: 'Markdown' }
-          );
+          // Уведомляем создателя о новом пользователе
+          try {
+            await bot.telegram.sendMessage(
+              OWNER_ID,
+              `👤 *Новый пользователь в боте*\n\n` +
+              `🆔 ID: \`${userId}\`\n` +
+              `👤 Имя: ${userName}\n` +
+              `📛 Фамилия: ${message.from.last_name || 'Не указана'}\n` +
+              `📱 Username: @${message.from.username || 'Не указан'}\n` +
+              `🕒 Время: ${new Date().toLocaleString('ru-RU')}`,
+              { parse_mode: 'Markdown' }
+            );
+          } catch (notificationError) {
+            console.error('Error sending notification:', notificationError);
+          }
         }
       }
 
@@ -181,9 +194,9 @@ module.exports = async (req, res) => {
           `📊 *Статистика бота*\n\n` +
           `🤖 Бот активен\n` +
           `👑 Создатель: ${OWNER_ID}\n` +
-          `🕒 Время работы: ${new Date().toLocaleString('ru-RU')}\n` +
-          `🌐 Сайт: https://rzd-machinist-portal.vercel.app\n\n` +
-          `⚡ Бот готов к приему сообщений с формы обратной связи!`,
+          `🕒 Время: ${new Date().toLocaleString('ru-RU')}\n` +
+          `🌐 Сайт: rzd-machinist-portal.vercel.app\n\n` +
+          `⚡ Бот готов к приему сообщений!`,
           { parse_mode: 'Markdown' }
         );
       }
@@ -193,11 +206,9 @@ module.exports = async (req, res) => {
         await bot.telegram.sendMessage(
           chatId,
           `🌐 *Демо-портал машиниста РЖД*\n\n` +
-          `Перейдите по ссылке ниже, чтобы посетить сайт:\n\n` +
-          `[​](https://rzd-machinist-portal.vercel.app)`,
+          `Перейдите по ссылке ниже, чтобы посетить сайт:`,
           {
             parse_mode: 'Markdown',
-            disable_web_page_preview: false,
             reply_markup: {
               inline_keyboard: [[
                 {
@@ -252,17 +263,21 @@ module.exports = async (req, res) => {
           );
 
           // Уведомляем создателя о сообщении от пользователя
-          await bot.telegram.sendMessage(
-            OWNER_ID,
-            `💬 *Сообщение от пользователя*\n\n` +
-            `🆔 ID: ${userId}\n` +
-            `👤 Имя: ${message.from.first_name || 'Не указано'}\n` +
-            `📛 Фамилия: ${message.from.last_name || 'Не указана'}\n` +
-            `📱 Username: @${message.from.username || 'Не указан'}\n` +
-            `💬 Текст: ${text}\n` +
-            `🕒 Время: ${new Date().toLocaleString('ru-RU')}`,
-            { parse_mode: 'Markdown' }
-          );
+          try {
+            await bot.telegram.sendMessage(
+              OWNER_ID,
+              `💬 *Сообщение от пользователя*\n\n` +
+              `🆔 ID: \`${userId}\`\n` +
+              `👤 Имя: ${userName}\n` +
+              `📛 Фамилия: ${message.from.last_name || 'Не указана'}\n` +
+              `📱 Username: @${message.from.username || 'Не указан'}\n` +
+              `💬 Текст: ${text}\n` +
+              `🕒 Время: ${new Date().toLocaleString('ru-RU')}`,
+              { parse_mode: 'Markdown' }
+            );
+          } catch (notificationError) {
+            console.error('Error sending user message notification:', notificationError);
+          }
         }
       }
     }
@@ -279,6 +294,10 @@ module.exports = async (req, res) => {
     res.status(200).json({ success: true });
   } catch (error) {
     console.error('Bot error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      success: false, 
+      error: 'Internal server error',
+      details: error.message 
+    });
   }
 };
