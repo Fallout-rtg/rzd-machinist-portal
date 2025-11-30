@@ -19,17 +19,16 @@ const Carousel = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % LOCOMOTIVES.length);
   }, []);
 
-  // Автоматическое переключение
   useEffect(() => {
     if (isPaused) return;
-    const timer = setInterval(nextSlide, 7000); // Смена каждые 7 секунд
+    const timer = setInterval(nextSlide, 7000);
     return () => clearInterval(timer);
   }, [isPaused, nextSlide]);
 
   const goToSlide = (index) => {
     setIsPaused(true);
     setCurrentIndex(index);
-    setTimeout(() => setIsPaused(false), 5000); // Пауза после ручного переключения
+    setTimeout(() => setIsPaused(false), 5000);
   };
 
   const wrapIndex = (index) => {
@@ -40,7 +39,6 @@ const Carousel = () => {
     const diff = index - currentIndex;
     const wrappedDiff = wrapIndex(diff);
     
-    // Определяем позицию относительно центра
     if (wrappedDiff === 0) return 'center';
     if (wrappedDiff === 1 || wrappedDiff === LOCOMOTIVES.length - 1) return 'near';
     if (wrappedDiff === 2 || wrappedDiff === LOCOMOTIVES.length - 2) return 'far';
@@ -48,7 +46,6 @@ const Carousel = () => {
   };
 
   const getVariants = (position) => {
-    // Адаптивные значения для ПК и мобильных
     const baseScale = { initial: 0.8, center: 1, near: 0.9, far: 0.8, hidden: 0.7 };
     const baseTranslateX = { 
         initial: "0%", 
@@ -61,7 +58,6 @@ const Carousel = () => {
     const baseRotateY = { initial: 0, center: 0, near: -10, far: -15, hidden: -20 };
     const baseOpacity = { initial: 0, center: 1, near: 0.8, far: 0.4, hidden: 0 };
     
-    // Мобильная коррекция
     const mobileTranslateX = { 
         initial: "0%", 
         center: "0%", 
@@ -70,8 +66,7 @@ const Carousel = () => {
         hidden: "50%" 
     };
     
-    // Используем `viewport` для адаптивности в `framer-motion`
-    const isMobile = window.innerWidth < 768;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
     return {
       center: {
@@ -124,19 +119,18 @@ const Carousel = () => {
           Техника <span className="text-rzd-red">наших дорог</span>
         </h2>
         
-        {/* Карусель */}
         <div 
           className="relative h-[450px] md:h-[550px] w-full"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          style={{ perspective: '1200px' }} // 3D перспектива
+          style={{ perspective: '1200px' }}
         >
           {LOCOMOTIVES.map((loco, index) => {
             const position = getCardPosition(index);
             const isCurrent = index === currentIndex;
             const isNext = wrapIndex(index - currentIndex) < LOCOMOTIVES.length / 2;
             
-            if (position === 'hidden' && !isCurrent) return null; // Оптимизация
+            if (position === 'hidden' && !isCurrent) return null;
 
             return (
               <motion.div
@@ -144,7 +138,7 @@ const Carousel = () => {
                 className={`absolute w-10/12 sm:w-8/12 md:w-6/12 lg:w-5/12 mx-auto left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer 
                   ${isCurrent ? 'z-50' : 'z-10'}
                 `}
-                custom={isNext} // Передаем кастомное свойство для определения стороны
+                custom={isNext}
                 initial="hidden"
                 animate={position}
                 variants={getVariants(position)}
@@ -156,7 +150,6 @@ const Carousel = () => {
           })}
         </div>
 
-        {/* Пагинация (точки) */}
         <div className="flex justify-center space-x-3 mt-12">
           {LOCOMOTIVES.map((_, index) => (
             <button
