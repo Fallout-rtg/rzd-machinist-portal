@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "description": "Демо-портал машиниста РЖД",
   "main": "index.html",
-  "scripts": {
-    "dev": "vercel dev",
-    "start": "node api/bot.js"
-  },
   "dependencies": {
     "telegraf": "^4.16.3"
   },
