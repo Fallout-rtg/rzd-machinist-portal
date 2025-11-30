@@ -1,0 +1,150 @@
+import { NextResponse } from 'next/server';
+import { parse } from 'multipart-form-data';
+
+// Секреты берутся из Vercel Environment Variables
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const OWNER_ID = process.env.TELEGRAM_OWNER_ID;
+const VERCEL_URL = process.env.VERCEL_URL;
+const SITE_LINK = VERCEL_URL ? `https://${VERCEL_URL}` : 'http://localhost:3000';
+
+// Функция для отправки текстового сообщения
+const sendTextMessage = async (chatId, text, options = {}) => {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+    const payload = {
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'HTML',
+        ...options,
+    };
+    await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    });
+};
+
+// Функция для отправки файлов
+const sendPhotoMessage = async (chatId, photo, caption) => {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+    const formData = new FormData();
+    formData.append('chat_id', chatId);
+    formData.append('photo', photo.file, photo.name);
+    if (caption) {
+        formData.append('caption', caption);
+        formData.append('parse_mode', 'HTML');
+    }
+    
+    await fetch(url, {
+        method: 'POST',
+        body: formData,
+    });
+};
+
+// Функция для обработки входящего сообщения от пользователя (вне формы)
+async function handleUserMessage(update) {
+    const chatId = update.message.chat.id;
+    // Проверка, что это не владелец, чтобы не отправлять самому себе автосообщение
+    if (String(chatId) === String(OWNER_ID)) return; 
+
+    // Используем невидимый символ (U+2063) для скрытия текста ссылки, но сохранения кликабельности
+    const linkText = '⠀'; 
+    const invisibleLink = `<a href="${SITE_LINK}">${linkText}</a>`; 
+
+    const message = `
+<b>🚂 Демо-портал машиниста РЖД</b>
+Привет! Это автоматическое сообщение от демо-портала о профессии машиниста.
+
+<b>О проекте:</b>
+Сайт создан для информирования о профессии: история и современность локомотивов, карьерные пути, учебные заведения. Выполнен в фирменных цветах РЖД (белый/красный) с современными 3D-эффектами.
+
+<a href="${SITE_LINK}">Посетить сайт</a> ${invisibleLink}
+
+<b>ВНИМАНИЕ:</b> Чтобы получить красивый предпросмотр сайта, Telegram должен самостоятельно сгенерировать его. Простое добавление ссылки в конце сообщения часто помогает.
+`;
+    
+    // Отправляем сообщение с красивым предпросмотром
+    await sendTextMessage(chatId, message);
+}
+
+// =======================================================
+// API Route для обработки формы обратной связи (POST)
+// =======================================================
+export async function POST(req) {
+    try {
+        const contentType = req.headers.get('content-type');
+        if (!contentType || !contentType.includes('multipart/form-data')) {
+            return NextResponse.json({ error: 'Неверный тип контента' }, { status: 400 });
+        }
+
+        const formData = await req.formData();
+        
+        const email = formData.get('email');
+        const message = formData.get('message');
+        const files = formData.getAll('files'); // Это массив File объектов
+        
+        if (!email || !message) {
+            return NextResponse.json({ error: 'Отсутствует почта или сообщение' }, { status: 400 });
+        }
+
+        let mainMessage = `
+<b>📧 Новое сообщение с Демо-портала!</b>
+<b>От:</b> ${email}
+<b>Сообщение:</b>
+${message}
+`;
+
+        let fileNames = [];
+        if (files && files.length > 0) {
+            fileNames = files.map(f => f.name);
+            mainMessage += `\n\n<b>Прикреплено файлов:</b> ${files.length} (${fileNames.join(', ')})`;
+        }
+
+        // 1. Отправка основного сообщения в чат владельца
+        await sendTextMessage(OWNER_ID, mainMessage);
+
+        // 2. Отправка файлов
+        if (files && files.length > 0) {
+            // Отправляем первый файл с подписью, остальные без
+            const firstFile = files[0];
+            await sendPhotoMessage(OWNER_ID, { file: firstFile, name: firstFile.name }, `Первое прикрепленное фото: ${firstFile.name}`);
+
+            for (let i = 1; i < files.length; i++) {
+                const file = files[i];
+                await sendPhotoMessage(OWNER_ID, { file: file, name: file.name });
+            }
+        }
+
+        return NextResponse.json({ success: true, fileNames }, { status: 200 });
+    } catch (error) {
+        console.error('Telegram API Error:', error);
+        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 });
+    }
+}
+
+// =======================================================
+// API Route для вебхуков Telegram (GET/POST - для автосообщения)
+// =======================================================
+// В реальном приложении нужно настроить вебхук, но для простоты, 
+// мы будем обрабатывать любые GET/POST запросы здесь, 
+// ожидая, что владелец отправит сюда URL как вебхук.
+
+export async function GET(req) {
+    // В случае GET-запроса, считаем это запросом на настройку вебхука или просто проверкой
+    return NextResponse.json({ status: 'OK', message: 'Telegram webhook endpoint is running.' }, { status: 200 });
+}
+
+export async function PUT(req) { // Имитация обработки вебхука
+    try {
+        const update = await req.json();
+        
+        if (update.message) {
+            // Это входящее сообщение от пользователя
+            await handleUserMessage(update);
+        }
+
+        return NextResponse.json({ success: true }, { status: 200 });
+    } catch (error) {
+        console.error('Webhook processing error:', error);
+        return NextResponse.json({ error: 'Error processing webhook' }, { status: 500 });
+    }
+}
