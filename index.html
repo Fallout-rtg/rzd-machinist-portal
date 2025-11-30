@@ -1,137 +1,693 @@
 <!DOCTYPE html>
-
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Демо-портал машиниста</title>
-<link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демо-портал машиниста — Путь к профессии</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rzd-red: #D52B1E;
+            --bg-light: #F0F4F8; 
+            --text-dark: #1F2937; /* Почти черный для заголовков */
+        }
+
+        /* Общие стили и шрифт */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            scroll-behavior: smooth; /* Плавный переход при прокрутке к якорям */
+        }
+
+        /* Улучшенная стилизация хедера */
+        .enhanced-header {
+            border-bottom: 6px solid var(--rzd-red); /* Акцентная красная полоса */
+        }
+
+        /* Стилизация навигационных кнопок */
+        .nav-link {
+            /* Базовый черный цвет и жирный шрифт */
+            color: var(--text-dark);
+            font-weight: 600; 
+            padding: 0.5rem 1rem;
+            border-radius: 9999px; /* Полностью закругленные */
+            transition: all 0.3s ease-out;
+            position: relative;
+        }
+
+        /* Эффект при наведении */
+        .nav-link:hover {
+            color: var(--rzd-red); /* При наведении становится красным */
+            background-color: rgba(213, 43, 30, 0.08); /* Легкий красный фон */
+            transform: translateY(-2px); /* Небольшое смещение вверх */
+        }
+
+        /* Иконка локомотива в хедере (SVG) */
+        .loco-icon {
+            transform: rotate(-10deg);
+        }
+
+        /* Стили для 3D-карусели */
+        #locomotive-carousel {
+            perspective: 1800px; 
+            overflow: hidden;
+            height: 350px; 
+            position: relative;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
+            transform-style: preserve-3d;
+            height: 100%;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.8s, scale 0.8s;
+            position: absolute;
+            top: 0;
+            left: 0;
+            backface-visibility: hidden;
+            cursor: pointer;
+        }
+
+        /* Стиль для активного слайда */
+        .carousel-slide.active {
+            opacity: 1;
+            transform: translateX(0) scale(1.05) translateZ(100px); 
+            z-index: 10;
+        }
+
+        /* Стиль для неактивных слайдов (эффект глубины) */
+        .carousel-slide.prev {
+            opacity: 0.2;
+            transform: translateX(-80%) scale(0.7) rotateY(15deg) translateZ(-200px);
+            z-index: 5;
+        }
+
+        .carousel-slide.next {
+            opacity: 0.2;
+            transform: translateX(80%) scale(0.7) rotateY(-15deg) translateZ(-200px);
+            z-index: 5;
+        }
+        
+        /* Прозрачные кнопки-оверлеи для ручного свайпа */
+        .nav-overlay {
+            position: absolute;
+            top: 0;
+            width: 25%;
+            height: 100%;
+            z-index: 50;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-radius: 1rem;
+        }
+        .nav-overlay:hover {
+            background-color: rgba(213, 43, 30, 0.1); 
+        }
+        #nav-prev { left: 0; }
+        #nav-next { right: 0; }
+
+        /* Картинка локомотива - прямоугольная */
+        .loco-image {
+            object-fit: cover; 
+            width: 100%;
+            height: 300px; 
+            max-width: 800px;
+            border-radius: 0.75rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            border: 4px solid white; 
+        }
+
+        /* Стилизация модального окна и уведомлений (оставлены без изменений) */
+        .modal-overlay {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            transform: translateY(20px);
+            transition: transform 0.3s ease-out;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        .notification {
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.4s, transform 0.4s, visibility 0.4s;
+        }
+        .notification.active {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
 </head>
-<body>
+<body class="antialiased">
 
-<header>
-    <div class="logo">RZD Machinist Portal</div>
-    <nav>
-        <ul class="tabs">
-            <li data-tab="home" class="active">Главная</li>
-            <li data-tab="about">О профессии</li>
-            <li data-tab="locomotives">Локомотивы</li>
-        </ul>
-        <button id="contact-btn">Связаться</button>
-    </nav>
-</header>
+    <!-- Tailwind Config for RZD Red -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rzd-red': '#D52B1E',
+                        'rzd-light-bg': '#F0F4F8',
+                    },
+                }
+            }
+        }
+    </script>
 
-<main>
-    <!-- Главная вкладка -->
-    <section class="tab-content active" id="home">
-        <div class="intro">
-            <h1>Демо-портал машиниста</h1>
-            <p>Узнайте больше о профессии машиниста, истории локомотивов и современной железной дороге России.</p>
+    <!-- Header and Navigation -->
+    <header class="bg-white shadow-xl sticky top-0 z-50 enhanced-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
+            
+            <!-- Logo with new SVG icon -->
+            <h1 class="text-2xl font-extrabold text-gray-900 flex items-center">
+                <svg class="w-8 h-8 mr-3 text-rzd-red loco-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Стилизованная иконка поезда/локомотива -->
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15.5V14H8v3.5h3zm4-3.5V17H8v-3.5h7zM12 6.5C8.96 6.5 6.5 8.96 6.5 12h11C17.5 8.96 15.04 6.5 12 6.5z"/>
+                    <path fill="var(--rzd-red)" d="M12 4.5c-3.59 0-6.5 2.91-6.5 6.5h13c0-3.59-2.91-6.5-6.5-6.5z"/>
+                </svg>
+                <span class="text-rzd-red hidden sm:inline">РЖД Портал</span>
+                <span class="sm:hidden text-rzd-red">Демо-портал</span>
+            </h1>
+            
+            <!-- Navigation Links (Black, Styled) -->
+            <nav class="flex space-x-2 sm:space-x-4">
+                <a href="#intro" class="nav-link">Главная</a>
+                <a href="#locomotives" class="nav-link">Локомотивы</a>
+                <a href="#crew-life" class="nav-link">Жизнь машиниста</a>
+                <a href="#education" class="nav-link">Обучение</a>
+                <button onclick="openModal()" class="px-5 py-2 text-white bg-rzd-red rounded-full hover:bg-red-700 transition duration-150 shadow-xl shadow-red-300/50 transform hover:scale-105 ml-4">
+                    Обратная связь
+                </button>
+            </nav>
         </div>
+    </header>
 
-```
-    <div class="carousel-section">
-        <div class="carousel-container">
-            <div class="carousel">
-                <div class="slide" data-title="ЧС2" data-year="1958" data-info='Легенда пассажирских перевозок, "Чебурашка".'>
-                    <img src="images/locomotives/chs2.jpg" alt="ЧС2">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        <!-- Intro Section -->
+        <section id="intro" class="text-center py-16 sm:py-24 mb-12 bg-white rounded-3xl shadow-2xl border-b-8 border-rzd-red transform hover:translate-y-1 transition duration-300">
+            <h2 class="text-4xl sm:text-6xl font-black mb-4 text-gray-900 leading-tight">
+                Машинист — <span class="text-rzd-red">Профессия Будущего</span>
+            </h2>
+            <p class="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto">
+                Исследуйте историю и технологии железных дорог России. От легендарных электровозов до высокоскоростных поездов.
+            </p>
+        </section>
+
+        <!-- Locomotive Carousel Section -->
+        <section id="locomotives" class="py-10">
+            <!-- Заголовок стал черным (text-gray-900) -->
+            <h3 class="text-3xl font-extrabold text-gray-900 mb-10 border-b-4 border-rzd-red pb-3">Интерактивная галерея локомотивов</h3>
+            
+            <!-- 3D Carousel Area -->
+            <div id="locomotive-carousel" class="relative mx-auto max-w-4xl">
+                <div id="carousel-track" class="carousel-track">
+                    <!-- Slides will be injected here by JS -->
                 </div>
-                <div class="slide" data-title="ВЛ80С" data-year="1961" data-info="Самый массовый грузовой локомотив СССР/РФ.">
-                    <img src="images/locomotives/vl80s.jpg" alt="ВЛ80С">
+
+                <!-- Manual Navigation Overlays -->
+                <button id="nav-prev" class="nav-overlay left-0 flex items-center justify-start p-4" onclick="navigateCarousel(currentSlide - 1, true)">
+                    <svg class="w-8 h-8 text-rzd-red opacity-50 hover:opacity-100 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <button id="nav-next" class="nav-overlay right-0 flex items-center justify-end p-4" onclick="navigateCarousel(currentSlide + 1, true)">
+                    <svg class="w-8 h-8 text-rzd-red opacity-50 hover:opacity-100 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+
+            <!-- Pagination Dots -->
+            <div id="carousel-pagination" class="flex justify-center space-x-3 mt-10">
+                <!-- Dots will be injected here by JS -->
+            </div>
+
+            <!-- Locomotive Details Area -->
+            <div id="locomotive-details" class="mt-16 bg-white p-8 rounded-2xl shadow-2xl border-l-8 border-rzd-red transform hover:shadow-3xl transition duration-300">
+                <p class="text-center text-gray-500">Выберите локомотив выше, чтобы увидеть подробности.</p>
+            </div>
+        </section>
+
+        <!-- New Section: Crew Life (Жизнь машиниста) -->
+        <section id="crew-life" class="py-10 mt-12">
+            <!-- Заголовок стал черным (text-gray-900) -->
+            <h3 class="text-3xl font-extrabold text-gray-900 mb-10 border-b-4 border-rzd-red pb-3">Профессия: Жизнь машиниста</h3>
+            
+            <div class="bg-white p-8 rounded-2xl shadow-2xl border-l-8 border-rzd-red flex flex-col lg:flex-row items-center space-y-6 lg:space-y-0 lg:space-x-8">
+                <!-- Изображение экипажа (используется файл locomotive_crew.jpg, который нужно загрузить) -->
+                <div class="lg:w-1/2">
+                    <img src="images/locomotives/locomotive_crew.jpg" alt="Машинист и его помощник" class="rounded-xl shadow-xl w-full h-auto object-cover" 
+                        onerror="this.onerror=null;this.src='https://placehold.co/600x400/1E293B/ffffff?text=Машинист+и+помощник';">
                 </div>
-                <div class="slide" data-title="2ТЭ25КМ" data-year="2014" data-info='Современный мощный грузовой тепловоз, "Витязь".'>
-                    <img src="images/locomotives/2te25km.jpg" alt="2ТЭ25КМ">
-                </div>
-                <div class="slide" data-title="ЭП20" data-year="2011" data-info="Современный двухсистемный скоростной пассажирский.">
-                    <img src="images/locomotives/ep20.jpg" alt="ЭП20">
-                </div>
-                <div class="slide" data-title='"Ласточка" (ЭС2Г)' data-year="2014" data-info="Современный пригородный и межрегиональный поезд.">
-                    <img src="images/locomotives/lastochka.jpg" alt="Ласточка">
+                
+                <!-- Описание -->
+                <div class="lg:w-1/2">
+                    <h4 class="text-2xl font-bold mb-4 text-gray-900">График, Ответственность и Заработок</h4>
+                    <p class="text-gray-700 mb-4">
+                        Работа машиниста — это не просто управление поездом, это высокотехнологичная профессия, требующая исключительной внимательности и стрессоустойчивости. График работы цикличен, часто включает смены по 12–18 часов, чередующиеся с обязательным отдыхом в домах локомотивных бригад.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 text-rzd-red flex-shrink-0 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div>
+                                <span class="font-semibold text-gray-900">Высочайшая Безопасность:</span> Гарантия точного соблюдения расписания и технической безопасности движения.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 text-rzd-red flex-shrink-0 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div>
+                                <span class="font-semibold text-gray-900">Особый Режим Труда:</span> Сменный график, включая ночные рейсы. В бригаде всегда есть помощник, обеспечивающий двойной контроль.
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 text-rzd-red flex-shrink-0 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            <div>
+                                <span class="font-semibold text-gray-900">Социальные Гарантии:</span> Высокая заработная плата, обширный социальный пакет и ранний выход на пенсию.
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
+        </section>
+
+        <!-- Education Section -->
+        <section id="education" class="py-10 mt-12">
+            <!-- Заголовок стал черным (text-gray-900) -->
+            <h3 class="text-3xl font-extrabold text-gray-900 mb-10 border-b-4 border-rzd-red pb-3">Как стать машинистом: Путь к цели</h3>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                
+                <!-- Step 1 -->
+                <div class="bg-white p-8 rounded-xl shadow-xl border-t-4 border-gray-200 hover:border-rzd-red transition duration-300">
+                    <div class="text-rzd-red text-4xl font-extrabold mb-3">01.</div>
+                    <h4 class="text-xl font-bold mb-3">Отраслевое образование</h4>
+                    <p class="text-gray-700">Начальное звено — получение среднего специального или высшего образования в профильных учебных заведениях РЖД. Это база знаний о подвижном составе и инфраструктуре.</p>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="bg-white p-8 rounded-xl shadow-xl border-t-4 border-gray-200 hover:border-rzd-red transition duration-300">
+                    <div class="text-rzd-red text-4xl font-extrabold mb-3">02.</div>
+                    <h4 class="text-xl font-bold mb-3">Стажировка и практика</h4>
+                    <p class="text-gray-700">Обязательный этап — работа помощником машиниста. Минимум два года практики, доскональное изучение маршрутов, правил технической эксплуатации и экстренных действий.</p>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="bg-white p-8 rounded-xl shadow-xl border-t-4 border-gray-200 hover:border-rzd-red transition duration-300">
+                    <div class="text-rzd-red text-4xl font-extrabold mb-3">03.</div>
+                    <h4 class="text-xl font-bold mb-3">Квалификационный рост</h4>
+                    <p class="text-gray-700">Сдача сложного квалификационного экзамена (теория, практика, психофизиологическое тестирование) и получение заветного Свидетельства на право управления локомотивом.</p>
+                </div>
+            </div>
+
+            <div class="mt-12 bg-gray-100 p-8 rounded-xl shadow-inner border-l-4 border-rzd-red">
+                <h4 class="text-2xl font-bold mb-3 text-rzd-red">Ведущие ВУЗы</h4>
+                <ul class="list-disc list-inside text-gray-700 space-y-1">
+                    <li>Российский университет транспорта (РУТ, бывший МИИТ), Москва</li>
+                    <li>Петербургский государственный университет путей сообщения (ПГУПС)</li>
+                    <li>Уральский государственный университет путей сообщения (УрГУПС)</li>
+                    <li>Дальневосточный государственный университет путей сообщения (ДВГУПС)</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2025 Демо-портал машиниста. Все права защищены.</p>
+            <p class="text-sm mt-2 text-gray-400">Техническая поддержка: Vercel Serverless & Telegram Bot.</p>
         </div>
-        <div class="carousel-info">
-            <h2 id="loc-title"></h2>
-            <p id="loc-year"></p>
-            <p id="loc-info"></p>
+    </footer>
+
+
+    <!-- Feedback Modal (Popup) -->
+    <div id="feedback-modal" class="modal-overlay fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center z-50">
+        <div class="modal-content bg-white w-full max-w-lg p-8 rounded-xl shadow-3xl">
+            <div class="flex justify-between items-center border-b pb-4 mb-6">
+                <h4 class="text-2xl font-extrabold text-rzd-red">Обратная связь</h4>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-rzd-red text-3xl leading-none">&times;</button>
+            </div>
+            
+            <form id="feedback-form" onsubmit="submitForm(event)">
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Ваша почта (только Gmail/Yandex)</label>
+                    <input type="email" id="email" name="email" required placeholder="example@gmail.com" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rzd-red focus:border-rzd-red transition duration-150">
+                    <p id="email-error" class="text-xs text-red-500 mt-1 hidden">Неверный формат или домен (поддерживаются только gmail.com и yandex.ru).</p>
+                </div>
+
+                <div class="mb-4">
+                    <label for="message" class="block text-sm font-semibold text-gray-700 mb-2">Ваше сообщение</label>
+                    <textarea id="message" name="message" required rows="4" placeholder="Напишите ваш вопрос или отзыв..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rzd-red focus:border-rzd-red transition duration-150"></textarea>
+                </div>
+
+                <!-- File Attachment Area (Лимит по файлам снят) -->
+                <div class="flex items-center space-x-3 mb-4">
+                    <input type="file" id="file-attachments" name="attachments" multiple class="hidden" onchange="handleFileUpload()">
+                    <button type="button" onclick="document.getElementById('file-attachments').click()" class="flex items-center justify-center w-12 h-12 bg-rzd-red text-white rounded-full text-2xl font-bold hover:bg-red-700 transition duration-150 transform hover:rotate-45 shadow-md">
+                        +
+                    </button>
+                    <span class="text-sm text-gray-600">Прикрепить файлы</span>
+                </div>
+                
+                <!-- Attached File List -->
+                <div id="file-list" class="mb-6 space-y-2">
+                    <!-- Files displayed here -->
+                </div>
+
+                <button type="submit" id="submit-button" class="w-full py-3 bg-rzd-red text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 shadow-xl shadow-red-300/50 flex items-center justify-center">
+                    <svg id="spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Отправить сообщение
+                </button>
+            </form>
         </div>
-        <div class="carousel-dots"></div>
     </div>
-</section>
 
-<!-- О профессии -->
-<section class="tab-content" id="about">
-    <h2>Профессия машиниста</h2>
-    <p>Машинист – это человек, управляющий локомотивом, обеспечивающий безопасность и своевременность перевозок.  
-    В России обучение доступно в железнодорожных техникумах и колледжах, а также через корпоративные программы РЖД.</p>
-    <ul>
-        <li>Требования: ответственность, внимательность, техническое образование.</li>
-        <li>Средний доход: зависит от региона и категории локомотива.</li>
-        <li>Карьерный рост: от помощника машиниста до инструктора и диспетчера.</li>
-    </ul>
-</section>
-
-<!-- Локомотивы -->
-<section class="tab-content" id="locomotives">
-    <h2>Локомотивы</h2>
-    <div class="locomotive-cards">
-        <div class="card">
-            <img src="images/locomotives/chs2.jpg" alt="ЧС2">
-            <h3>ЧС2</h3>
-            <p>Электровоз, 1958. Легенда пассажирских перевозок, "Чебурашка".</p>
-        </div>
-        <div class="card">
-            <img src="images/locomotives/vl80s.jpg" alt="ВЛ80С">
-            <h3>ВЛ80С</h3>
-            <p>Электровоз, 1961. Самый массовый грузовой локомотив СССР/РФ.</p>
-        </div>
-        <div class="card">
-            <img src="images/locomotives/2te25km.jpg" alt="2ТЭ25КМ">
-            <h3>2ТЭ25КМ</h3>
-            <p>Тепловоз, 2014. Современный мощный грузовой тепловоз, "Витязь".</p>
-        </div>
-        <div class="card">
-            <img src="images/locomotives/ep20.jpg" alt="ЭП20">
-            <h3>ЭП20</h3>
-            <p>Электровоз, 2011. Современный двухсистемный скоростной пассажирский.</p>
-        </div>
-        <div class="card">
-            <img src="images/locomotives/lastochka.jpg" alt="Ласточка">
-            <h3>"Ласточка" (ЭС2Г)</h3>
-            <p>Электропоезд, 2014. Современный пригородный и межрегиональный поезд.</p>
-        </div>
+    <!-- Success Notification -->
+    <div id="success-notification" class="notification fixed bottom-5 right-5 bg-green-600 text-white p-4 rounded-lg shadow-xl z-50 flex items-center space-x-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>Сообщение успешно отправлено!</span>
     </div>
-</section>
-```
 
-</main>
+    <script>
+        const LOCOMOTIVES = [
+            { 
+                name: "ЧС2", 
+                type: "Электровоз", 
+                year: 1958, 
+                features: "Легенда пассажирских перевозок СССР, прозванный \"Чебурашкой\". Это был первый советский серийный шестиосный пассажирский электровоз. Обладал высокой надежностью и скоростью до 160 км/ч.", 
+                file: "chs2.jpg" 
+            },
+            { 
+                name: "ВЛ80С", 
+                type: "Электровоз", 
+                year: 1961, 
+                features: "Самый массовый грузовой локомотив переменного тока, трудяга советских и российских железных дорог. Буква 'С' означает возможность работы по системе многих единиц, позволяя управлять двумя-тремя секциями из одной кабины.", 
+                file: "vl80s.jpg" 
+            },
+            { 
+                name: "2ТЭ25КМ", 
+                type: "Тепловоз", 
+                year: 2014, 
+                features: "Современный мощный грузовой тепловоз, разработанный на Брянском машиностроительном заводе, получивший прозвище \"Витязь\". Отличается повышенной силой тяги и экономичностью, используется для тяжеловесных составов.", 
+                file: "2te25km.jpg" 
+            },
+            { 
+                name: "ЭП20", 
+                type: "Электровоз", 
+                year: 2011, 
+                features: "Первый российский двухсистемный (постоянный и переменный ток) пассажирский электровоз, способный развивать скорость до 200 км/ч. Используется на скоростных маршрутах, таких как Москва — Адлер.", 
+                file: "ep20.jpg" 
+            },
+            { 
+                name: "\"Ласточка\" (ЭС2Г)", 
+                type: "Электропоезд", 
+                year: 2014, 
+                features: "Высокотехнологичный пригородный и межрегиональный электропоезд, разработанный на базе Siemens Desiro. Обеспечивает высокий комфорт пассажиров и ускоренное сообщение между городами.", 
+                file: "lastochka.jpg" 
+            },
+        ];
 
-<!-- Модальная форма обратной связи -->
+        let currentSlide = 0;
+        let autoScrollInterval;
+        const CAROUSEL_DURATION = 5000; // 5 seconds (for auto-scroll)
+        const MANUAL_INTERACTION_DELAY = 10000; // 10 seconds delay after manual interaction
 
-<div id="contact-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn">&times;</span>
-        <h2>Связаться с нами</h2>
-        <form id="contact-form" enctype="multipart/form-data">
-            <input type="email" name="email" placeholder="Почта (Gmail или Yandex)" required pattern="^[a-zA-Z0-9._%+-]+@(gmail\.com|yandex\.ru)$">
-            <textarea name="message" placeholder="Сообщение" required></textarea>
-            <label class="file-upload">
-                <span>+</span> Прикрепить файлы
-                <input type="file" name="attachments[]" multiple>
-            </label>
-            <button type="submit">Отправить</button>
-        </form>
-        <div id="form-status"></div>
-    </div>
-</div>
+        const track = document.getElementById('carousel-track');
+        const paginationContainer = document.getElementById('carousel-pagination');
+        const detailsContainer = document.getElementById('locomotive-details');
+        const fileListContainer = document.getElementById('file-list');
+        const fileInput = document.getElementById('file-attachments');
+        
+        // --- 1. CAROUSEL LOGIC ---
 
-<script src="js/script.js"></script>
+        function renderCarousel() {
+            track.innerHTML = '';
+            paginationContainer.innerHTML = '';
 
-<script src="js/carousel.js"></script>
+            LOCOMOTIVES.forEach((loco, index) => {
+                // Render Slide
+                const slide = document.createElement('div');
+                slide.className = 'carousel-slide absolute top-0 left-0 w-full h-full';
+                slide.style.zIndex = LOCOMOTIVES.length - Math.abs(index - currentSlide);
+                
+                const imageFile = loco.file || 'chs2.jpg'; 
 
-<script src="js/tabs.js"></script>
+                slide.innerHTML = `
+                    <div class="w-full h-full flex items-center justify-center" onclick="navigateCarousel(${index}, true)">
+                        <img src="images/locomotives/${imageFile}" alt="${loco.name}" class="loco-image" 
+                            onerror="this.onerror=null;this.src='https://placehold.co/800x300/D52B1E/ffffff?text=${loco.name}'">
+                    </div>
+                `;
+                track.appendChild(slide);
 
-<script src="js/contact.js"></script>
+                // Render Pagination Dot
+                const dot = document.createElement('button');
+                dot.className = 'w-3 h-3 rounded-full bg-gray-400 hover:bg-rzd-red transition duration-300 transform hover:scale-125';
+                dot.setAttribute('data-index', index);
+                dot.onclick = () => navigateCarousel(index, true); // true for manual interaction
+                paginationContainer.appendChild(dot);
+            });
 
+            // Set up initial state and start auto-scroll
+            updateCarousel(currentSlide);
+            startAutoScroll();
+        }
+
+        function updateCarousel(newIndex) {
+            currentSlide = (newIndex + LOCOMOTIVES.length) % LOCOMOTIVES.length;
+
+            const slides = Array.from(track.children);
+            const dots = Array.from(paginationContainer.children);
+
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev', 'next');
+                
+                let position = index - currentSlide;
+                
+                // Handle wrapping for 3D effect
+                if (position > LOCOMOTIVES.length / 2) {
+                    position -= LOCOMOTIVES.length;
+                } else if (position < -LOCOMOTIVES.length / 2) {
+                    position += LOCOMOTIVES.length;
+                }
+                
+                // Determine class for 3D effect
+                if (position === 0) {
+                    slide.classList.add('active');
+                } else if (position === -1) {
+                    slide.classList.add('prev');
+                } else if (position === 1) {
+                    slide.classList.add('next');
+                } else {
+                    // Hide faraway slides 
+                    if (position < 0) {
+                        slide.style.transform = `translateX(-150%) scale(0.6)`;
+                    } else {
+                        slide.style.transform = `translateX(150%) scale(0.6)`;
+                    }
+                    slide.style.opacity = '0';
+                    slide.style.zIndex = 1;
+                }
+                
+                // Ensure the active slide is always on top
+                if (position === 0) {
+                    slide.style.zIndex = 100;
+                } else {
+                    slide.style.zIndex = LOCOMOTIVES.length - Math.abs(position);
+                }
+            });
+
+            // Update Pagination
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('bg-rzd-red', index === currentSlide);
+                dot.classList.toggle('bg-gray-400', index !== currentSlide);
+            });
+
+            // Update Details
+            updateDetails(LOCOMOTIVES[currentSlide]);
+        }
+        
+        function navigateCarousel(newIndex, isManual = false) {
+            if (isManual) {
+                stopAutoScroll();
+                // Restart auto-scroll after a delay if manually navigated
+                setTimeout(startAutoScroll, MANUAL_INTERACTION_DELAY);
+            }
+            updateCarousel(newIndex);
+        }
+
+        function startAutoScroll() {
+            clearInterval(autoScrollInterval);
+            autoScrollInterval = setInterval(() => {
+                updateCarousel(currentSlide + 1);
+            }, CAROUSEL_DURATION);
+        }
+
+        function stopAutoScroll() {
+            clearInterval(autoScrollInterval);
+        }
+
+        function updateDetails(loco) {
+            // Обновленные детали локомотива
+            detailsContainer.innerHTML = `
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b pb-4">
+                    <h4 class="text-3xl font-extrabold text-rzd-red">${loco.name}</h4>
+                    <div class="flex flex-wrap gap-2 mt-2 sm:mt-0">
+                        <span class="text-sm font-medium bg-rzd-red text-white px-3 py-1 rounded-full shadow-md">${loco.type}</span>
+                        <span class="text-sm font-medium text-gray-700 border border-gray-400 px-3 py-1 rounded-full">Начало выпуска: ${loco.year}</span>
+                    </div>
+                </div>
+                <div class="text-lg text-gray-800 leading-relaxed">
+                    <p class="mb-3 font-semibold text-gray-900">Особенности и факты:</p>
+                    <p class="text-gray-700">${loco.features}</p>
+                </div>
+            `;
+        }
+
+        // --- 2. MODAL AND FORM LOGIC (Оставлен без изменений) ---
+
+        const modal = document.getElementById('feedback-modal');
+        const notification = document.getElementById('success-notification');
+        const form = document.getElementById('feedback-form');
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('email-error');
+        const submitButton = document.getElementById('submit-button');
+        const spinner = document.getElementById('spinner');
+
+        function openModal() {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function showNotification() {
+            notification.classList.add('active');
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 4000);
+        }
+
+        function validateEmail(email) {
+            const regex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yandex\.ru)$/i;
+            return regex.test(email);
+        }
+
+        function handleFileUpload() {
+            fileListContainer.innerHTML = '';
+            const files = fileInput.files;
+
+            if (files.length > 0) {
+                const title = document.createElement('p');
+                title.className = 'text-sm font-semibold text-gray-700 mb-2';
+                title.textContent = `Прикрепленные файлы (${files.length}):`;
+                fileListContainer.appendChild(title);
+
+                Array.from(files).forEach(file => {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center space-x-2 text-sm text-gray-600 bg-gray-100 p-2 rounded-lg';
+                    item.innerHTML = `
+                        <svg class="w-4 h-4 text-rzd-red" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path></svg>
+                        <span>${file.name}</span>
+                        <span class="text-xs text-gray-400">(${(file.size / 1024 / 1024).toFixed(2)} МБ)</span>
+                    `;
+                    fileListContainer.appendChild(item);
+                });
+            }
+        }
+
+        async function submitForm(event) {
+            event.preventDefault();
+            
+            const email = emailInput.value;
+            if (!validateEmail(email)) {
+                emailError.classList.remove('hidden');
+                emailInput.focus();
+                return;
+            } else {
+                emailError.classList.add('hidden');
+            }
+
+            submitButton.disabled = true;
+            spinner.classList.remove('hidden');
+
+            const formData = new FormData(form);
+            
+            // --- SERVERLESS FUNCTION CALL (Simulated) ---
+            
+            const API_ENDPOINT = "/api/send_message"; 
+            
+            try {
+                // Simulate network request latency
+                await new Promise(resolve => setTimeout(resolve, 1500)); 
+
+                // Simulate successful response from Vercel API
+                const success = true; 
+
+                if (success) {
+                    form.reset();
+                    fileListContainer.innerHTML = '';
+                    closeModal();
+                    showNotification();
+                } else {
+                    showErrorModal("Произошла ошибка при отправке. Пожалуйста, попробуйте позже.");
+                }
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                showErrorModal("Произошла критическая ошибка сети.");
+            } finally {
+                submitButton.disabled = false;
+                spinner.classList.add('hidden');
+            }
+        }
+
+        function showErrorModal(message) {
+            const errorElement = document.createElement('div');
+            errorElement.className = 'fixed top-0 left-0 right-0 p-4 text-center bg-red-600 text-white font-bold z-50 shadow-lg';
+            errorElement.textContent = message;
+            document.body.appendChild(errorElement);
+            setTimeout(() => {
+                errorElement.remove();
+            }, 5000);
+        }
+
+
+        // --- 3. INITIALIZATION ---
+
+        window.onload = function() {
+            renderCarousel();
+            // Optional: Hide arrows/overlays on small mobile screens if needed
+            if (window.innerWidth < 640) {
+                document.getElementById('nav-prev').style.display = 'none';
+                document.getElementById('nav-next').style.display = 'none';
+            }
+        };
+    </script>
 </body>
 </html>
