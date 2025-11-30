@@ -8,9 +8,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'rzd-red': '#E30613', // Фирменный красный РЖД
+        'rzd-red': '#E30613',
         'rzd-white': '#FFFFFF',
-        'rzd-gray': '#F5F5F5', // Светлый фон
+        'rzd-gray': '#F5F5F5',
       },
       fontFamily: {
         sans: ['Arial', 'sans-serif'],
