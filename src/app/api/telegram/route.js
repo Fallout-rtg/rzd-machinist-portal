@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server';
-import { parse } from 'multipart-form-data';
 
-// Секреты берутся из Vercel Environment Variables
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const OWNER_ID = process.env.TELEGRAM_OWNER_ID;
 const VERCEL_URL = process.env.VERCEL_URL;
 const SITE_LINK = VERCEL_URL ? `https://${VERCEL_URL}` : 'http://localhost:3000';
 
-// Функция для отправки текстового сообщения
 const sendTextMessage = async (chatId, text, options = {}) => {
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
     const payload = {
@@ -23,7 +20,6 @@ const sendTextMessage = async (chatId, text, options = {}) => {
     });
 };
 
-// Функция для отправки файлов
 const sendPhotoMessage = async (chatId, photo, caption) => {
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
     const formData = new FormData();
@@ -40,13 +36,10 @@ const sendPhotoMessage = async (chatId, photo, caption) => {
     });
 };
 
-// Функция для обработки входящего сообщения от пользователя (вне формы)
 async function handleUserMessage(update) {
     const chatId = update.message.chat.id;
-    // Проверка, что это не владелец, чтобы не отправлять самому себе автосообщение
     if (String(chatId) === String(OWNER_ID)) return; 
 
-    // Используем невидимый символ (U+2063) для скрытия текста ссылки, но сохранения кликабельности
     const linkText = '⠀'; 
     const invisibleLink = `<a href="${SITE_LINK}">${linkText}</a>`; 
 
@@ -62,13 +55,9 @@ async function handleUserMessage(update) {
 <b>ВНИМАНИЕ:</b> Чтобы получить красивый предпросмотр сайта, Telegram должен самостоятельно сгенерировать его. Простое добавление ссылки в конце сообщения часто помогает.
 `;
     
-    // Отправляем сообщение с красивым предпросмотром
     await sendTextMessage(chatId, message);
 }
 
-// =======================================================
-// API Route для обработки формы обратной связи (POST)
-// =======================================================
 export async function POST(req) {
     try {
         const contentType = req.headers.get('content-type');
@@ -80,7 +69,7 @@ export async function POST(req) {
         
         const email = formData.get('email');
         const message = formData.get('message');
-        const files = formData.getAll('files'); // Это массив File объектов
+        const files = formData.getAll('files');
         
         if (!email || !message) {
             return NextResponse.json({ error: 'Отсутствует почта или сообщение' }, { status: 400 });
@@ -99,12 +88,9 @@ ${message}
             mainMessage += `\n\n<b>Прикреплено файлов:</b> ${files.length} (${fileNames.join(', ')})`;
         }
 
-        // 1. Отправка основного сообщения в чат владельца
         await sendTextMessage(OWNER_ID, mainMessage);
 
-        // 2. Отправка файлов
         if (files && files.length > 0) {
-            // Отправляем первый файл с подписью, остальные без
             const firstFile = files[0];
             await sendPhotoMessage(OWNER_ID, { file: firstFile, name: firstFile.name }, `Первое прикрепленное фото: ${firstFile.name}`);
 
@@ -121,24 +107,15 @@ ${message}
     }
 }
 
-// =======================================================
-// API Route для вебхуков Telegram (GET/POST - для автосообщения)
-// =======================================================
-// В реальном приложении нужно настроить вебхук, но для простоты, 
-// мы будем обрабатывать любые GET/POST запросы здесь, 
-// ожидая, что владелец отправит сюда URL как вебхук.
-
 export async function GET(req) {
-    // В случае GET-запроса, считаем это запросом на настройку вебхука или просто проверкой
     return NextResponse.json({ status: 'OK', message: 'Telegram webhook endpoint is running.' }, { status: 200 });
 }
 
-export async function PUT(req) { // Имитация обработки вебхука
+export async function PUT(req) {
     try {
         const update = await req.json();
         
         if (update.message) {
-            // Это входящее сообщение от пользователя
             await handleUserMessage(update);
         }
 
