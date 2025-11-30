@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const OWNER_ID = process.env.TELEGRAM_OWNER_ID;
 const VERCEL_URL = process.env.VERCEL_URL;
-const SITE_LINK = VERCEL_URL ? `https://${VERCEL_URL}` : 'http://localhost:3000';
+const SITE_LINK = VERCEL_URL ? `https://${VERCEL_URL}` : 'https://rzd-machinist-portal.vercel.app'; // Использована ваша ссылка
 
 const sendTextMessage = async (chatId, text, options = {}) => {
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -59,69 +59,72 @@ async function handleUserMessage(update) {
 }
 
 export async function POST(req) {
-    try {
-        const contentType = req.headers.get('content-type');
-        if (!contentType || !contentType.includes('multipart/form-data')) {
-            return NextResponse.json({ error: 'Неверный тип контента' }, { status: 400 });
-        }
+    const contentType = req.headers.get('content-type') || '';
 
-        const formData = await req.formData();
-        
-        const email = formData.get('email');
-        const message = formData.get('message');
-        const files = formData.getAll('files');
-        
-        if (!email || !message) {
-            return NextResponse.json({ error: 'Отсутствует почта или сообщение' }, { status: 400 });
-        }
+    // 1. ОБРАБОТКА ФОРМЫ (multipart/form-data)
+    if (contentType.includes('multipart/form-data')) {
+        try {
+            const formData = await req.formData();
+            
+            const email = formData.get('email');
+            const message = formData.get('message');
+            const files = formData.getAll('files');
+            
+            if (!email || !message) {
+                return NextResponse.json({ error: 'Отсутствует почта или сообщение' }, { status: 400 });
+            }
 
-        let mainMessage = `
+            let mainMessage = `
 <b>📧 Новое сообщение с Демо-портала!</b>
 <b>От:</b> ${email}
 <b>Сообщение:</b>
 ${message}
 `;
 
-        let fileNames = [];
-        if (files && files.length > 0) {
-            fileNames = files.map(f => f.name);
-            mainMessage += `\n\n<b>Прикреплено файлов:</b> ${files.length} (${fileNames.join(', ')})`;
-        }
-
-        await sendTextMessage(OWNER_ID, mainMessage);
-
-        if (files && files.length > 0) {
-            const firstFile = files[0];
-            await sendPhotoMessage(OWNER_ID, { file: firstFile, name: firstFile.name }, `Первое прикрепленное фото: ${firstFile.name}`);
-
-            for (let i = 1; i < files.length; i++) {
-                const file = files[i];
-                await sendPhotoMessage(OWNER_ID, { file: file, name: file.name });
+            let fileNames = [];
+            if (files && files.length > 0) {
+                fileNames = files.map(f => f.name);
+                mainMessage += `\n\n<b>Прикреплено файлов:</b> ${files.length} (${fileNames.join(', ')})`;
             }
-        }
 
-        return NextResponse.json({ success: true, fileNames }, { status: 200 });
-    } catch (error) {
-        console.error('Telegram API Error:', error);
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 });
+            await sendTextMessage(OWNER_ID, mainMessage);
+
+            if (files && files.length > 0) {
+                const firstFile = files[0];
+                await sendPhotoMessage(OWNER_ID, { file: firstFile, name: firstFile.name }, `Первое прикрепленное фото: ${firstFile.name}`);
+
+                for (let i = 1; i < files.length; i++) {
+                    const file = files[i];
+                    await sendPhotoMessage(OWNER_ID, { file: file, name: file.name });
+                }
+            }
+
+            return NextResponse.json({ success: true, fileNames }, { status: 200 });
+        } catch (error) {
+            console.error('Form processing error:', error);
+            return NextResponse.json({ error: 'Внутренняя ошибка сервера при обработке формы' }, { status: 500 });
+        }
+    } 
+    
+    // 2. ОБРАБОТКА TELEGRAM WEBHOOK (application/json)
+    else if (contentType.includes('application/json')) {
+        try {
+            const update = await req.json();
+            
+            if (update.message) {
+                await handleUserMessage(update);
+            }
+
+            return NextResponse.json({ success: true }, { status: 200 });
+        } catch (error) {
+            console.error('Webhook processing error:', error);
+            return NextResponse.json({ error: 'Error processing webhook' }, { status: 500 });
+        }
     }
+
+    return NextResponse.json({ error: 'Unsupported Content Type' }, { status: 400 });
 }
 
 export async function GET(req) {
     return NextResponse.json({ status: 'OK', message: 'Telegram webhook endpoint is running.' }, { status: 200 });
-}
-
-export async function PUT(req) {
-    try {
-        const update = await req.json();
-        
-        if (update.message) {
-            await handleUserMessage(update);
-        }
-
-        return NextResponse.json({ success: true }, { status: 200 });
-    } catch (error) {
-        console.error('Webhook processing error:', error);
-        return NextResponse.json({ error: 'Error processing webhook' }, { status: 500 });
-    }
 }
