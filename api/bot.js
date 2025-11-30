@@ -1,5 +1,4 @@
 const { Telegraf } = require('telegraf');
-const fetch = require('node-fetch');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -192,16 +191,6 @@ module.exports = async (req, res) => {
               }
             }
           );
-
-          try {
-            await bot.telegram.sendMessage(
-              OWNER_ID,
-              `👤 *Новый пользователь в боте*\n\n🆔 ID: \`${userId}\`\n👤 Имя: ${userName}\n📛 Фамилия: ${message.from.last_name || 'Не указана'}\n📱 Username: @${message.from.username || 'Не указан'}\n🕒 Время: ${new Date().toLocaleString('ru-RU')}`,
-              { parse_mode: 'Markdown' }
-            );
-          } catch (error) {
-            console.error('Error sending notification:', error);
-          }
         }
       } else if (text.startsWith('/site')) {
         await bot.telegram.sendMessage(
@@ -251,16 +240,6 @@ module.exports = async (req, res) => {
               }
             }
           );
-
-          try {
-            await bot.telegram.sendMessage(
-              OWNER_ID,
-              `💬 *Сообщение от пользователя*\n\n🆔 ID: \`${userId}\`\n👤 Имя: ${userName}\n📛 Фамилия: ${message.from.last_name || 'Не указана'}\n📱 Username: @${message.from.username || 'Не указан'}\n💬 Текст: ${text}\n🕒 Время: ${new Date().toLocaleString('ru-RU')}`,
-              { parse_mode: 'Markdown' }
-            );
-          } catch (error) {
-            console.error('Error sending user message notification:', error);
-          }
         }
       }
     }
