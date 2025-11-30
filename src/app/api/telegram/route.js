@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const OWNER_ID = process.env.TELEGRAM_OWNER_ID;
-const VERCEL_URL = process.env.VERCEL_URL;
-const SITE_LINK = VERCEL_URL ? `https://${VERCEL_URL}` : 'https://rzd-machinist-portal.vercel.app'; // Использована ваша ссылка
+// Жестко задаем ваш домен, чтобы избежать проблем с переменными окружения Vercel
+const SITE_LINK = 'https://rzd-machinist-portal.vercel.app'; 
 
 const sendTextMessage = async (chatId, text, options = {}) => {
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -107,7 +107,9 @@ ${message}
     } 
     
     // 2. ОБРАБОТКА TELEGRAM WEBHOOK (application/json)
-    else if (contentType.includes('application/json')) {
+    // Вебхук Telegram всегда отправляет POST-запрос с JSON-телом. 
+    // Поскольку он не может быть multipart/form-data, он должен быть Webhook.
+    else {
         try {
             const update = await req.json();
             
@@ -117,12 +119,10 @@ ${message}
 
             return NextResponse.json({ success: true }, { status: 200 });
         } catch (error) {
-            console.error('Webhook processing error:', error);
-            return NextResponse.json({ error: 'Error processing webhook' }, { status: 500 });
+            // Если запрос не смог быть распарсен как JSON, игнорируем, чтобы не ломать Webhook
+            return NextResponse.json({ success: false, error: 'Could not parse JSON or webhook failed' }, { status: 200 });
         }
     }
-
-    return NextResponse.json({ error: 'Unsupported Content Type' }, { status: 400 });
 }
 
 export async function GET(req) {
