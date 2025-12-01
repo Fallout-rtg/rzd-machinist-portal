@@ -43,7 +43,7 @@
         #locomotive-carousel {
             perspective: 1800px;
             overflow: hidden;
-            height: 800px;
+            height: 700px;
             position: relative;
         }
 
@@ -111,13 +111,14 @@
         #nav-next { right: 0; }
 
         .loco-image {
-            object-fit: cover;
+            object-fit: contain;
             width: 95%;
-            height: 750px;
+            height: 650px;
             max-width: 900px;
             border-radius: 0.75rem;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
             border: 4px solid white;
+            background-color: #f8fafc;
         }
 
         .modal-overlay {
@@ -177,6 +178,53 @@
             transform: translateX(0);
         }
 
+        .crew-image {
+            object-fit: cover;
+            width: 100%;
+            height: 300px;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .loco-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px dashed #e5e7eb;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--rzd-red);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.125rem;
+            color: #111827;
+            font-weight: 700;
+        }
+
+        @media (max-width: 1024px) {
+            #locomotive-carousel {
+                height: 500px;
+            }
+
+            .loco-image {
+                height: 450px;
+            }
+        }
+
         @media (max-width: 768px) {
             #locomotive-carousel {
                 height: 400px;
@@ -218,9 +266,17 @@
             }
 
             #locomotive-details {
-                min-height: 200px;
+                min-height: 400px;
                 height: auto;
                 overflow: visible;
+            }
+
+            .crew-image {
+                height: 250px;
+            }
+
+            .loco-stats {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -246,13 +302,38 @@
             }
 
             #locomotive-details {
-                min-height: 180px;
+                min-height: 450px;
                 padding: 1.5rem;
+            }
+
+            .crew-image {
+                height: 200px;
             }
         }
 
         .touch-action {
             touch-action: pan-y;
+        }
+
+        #feedback-form input,
+        #feedback-form textarea {
+            font-size: 16px;
+        }
+
+        #file-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .details-container {
+            min-height: 400px;
+            transition: min-height 0.3s ease;
+        }
+
+        @media (min-width: 769px) {
+            .details-container {
+                min-height: 450px;
+            }
         }
     </style>
 </head>
@@ -352,7 +433,7 @@
             <div id="carousel-pagination" class="flex justify-center space-x-3 mt-10">
             </div>
 
-            <div id="locomotive-details" class="mt-16 bg-white p-8 rounded-2xl shadow-2xl border-l-8 border-rzd-red transform hover:shadow-3xl transition duration-300 min-h-[300px]">
+            <div id="locomotive-details" class="details-container mt-8 bg-white p-8 rounded-2xl shadow-2xl border-l-8 border-rzd-red transform hover:shadow-3xl transition duration-300">
                 <p class="text-center text-gray-500">Выберите локомотив выше, чтобы увидеть подробности.</p>
             </div>
         </section>
@@ -362,7 +443,7 @@
             
             <div class="bg-white p-8 rounded-2xl shadow-2xl border-l-8 border-rzd-red flex flex-col lg:flex-row items-center space-y-6 lg:space-y-0 lg:space-x-8">
                 <div class="lg:w-1/2">
-                    <img src="images/locomotives/locomotive_crew.jpg" alt="Машинист и его помощник" class="rounded-xl shadow-xl w-full h-auto object-cover" 
+                    <img src="images/locomotives/locomotive_crew.jpg" alt="Машинист и его помощник" class="crew-image" 
                         onerror="this.onerror=null;this.src='https://placehold.co/600x400/1E293B/ffffff?text=Машинист+и+помощник';">
                 </div>
                 
@@ -435,7 +516,6 @@
     <footer class="bg-gray-900 text-white py-8 mt-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p>&copy; 2025 Демо-портал машиниста. Все права защищены.</p>
-            <p class="text-sm mt-2 text-gray-400">Техническая поддержка: Vercel Serverless & Telegram Bot.</p>
         </div>
     </footer>
 
@@ -494,37 +574,146 @@
                 name: "ЧС2", 
                 type: "Электровоз", 
                 year: 1958, 
-                features: "Легенда пассажирских перевозок СССР, прозванный \"Чебурашкой\". Это был первый советский серийный шестиосный пассажирский электровоз. Обладал высокой надежностью и скоростью до 160 км/ч.", 
+                features: "Легенда пассажирских перевозок СССР, прозванный 'Чебурашкой'. Первый советский серийный шестиосный пассажирский электровоз. Разработан в Чехословакии на заводе Škoda. Использовался на главных направлениях советских железных дорог. Отличался высокой надежностью, комфортной кабиной и характерным звуком двигателей. Выпускался с 1958 по 1972 год, всего построено 942 локомотива.", 
+                power: "5100 кВт",
+                speed: "160 км/ч",
+                weight: "126 тонн",
+                length: "20.62 м",
+                manufacturer: "Škoda (Чехословакия)",
                 file: "chs2.jpg" 
             },
             { 
                 name: "ВЛ80С", 
                 type: "Электровоз", 
                 year: 1961, 
-                features: "Самый массовый грузовой локомотив переменного тока, трудяга советских и российских железных дорог. Буква 'С' означает возможность работы по системе многих единиц, позволяя управлять двумя-тремя секциями из одной кабины.", 
+                features: "Самый массовый грузовой локомотив переменного тока, трудяга советских и российских железных дорог. Буква 'С' означает возможность работы по системе многих единиц, позволяя управлять двумя-тремя секциями из одной кабины. Разработан на Новочеркасском электровозостроительном заводе. Отличается высокой тягой и надежностью. Используется на тяжеловесных грузовых перевозках по всей России. Выпускался с 1961 по 1994 год, построено более 4000 локомотивов.", 
+                power: "6520 кВт",
+                speed: "110 км/ч",
+                weight: "192 тонны",
+                length: "32.4 м",
+                manufacturer: "НЭВЗ (СССР/Россия)",
                 file: "vl80s.jpg" 
             },
             { 
                 name: "2ТЭ25КМ", 
                 type: "Тепловоз", 
                 year: 2014, 
-                features: "Современный мощный грузовой тепловоз, разработанный на Брянском машиностроительном заводе, получивший прозвище \"Витязь\". Отличается повышенной силой тяги и экономичностью, используется для тяжеловесных составов.", 
+                features: "Современный мощный грузовой тепловоз, разработанный на Брянском машиностроительном заводе, получивший прозвище 'Витязь'. Представляет собой двухсекционный локомотив с дизель-генераторной установкой. Отличается повышенной силой тяги, экономичностью и современными системами управления. Используется для тяжеловесных составов на неэлектрифицированных участках. Оснащен системой климат-контроля в кабине и современными средствами безопасности.", 
+                power: "3670 кВт",
+                speed: "120 км/ч",
+                weight: "2 × 150 тонн",
+                length: "2 × 22.12 м",
+                manufacturer: "Брянский машиностроительный завод",
                 file: "2te25km.jpg" 
             },
             { 
                 name: "ЭП20", 
                 type: "Электровоз", 
                 year: 2011, 
-                features: "Первый российский двухсистемный (постоянный и переменный ток) пассажирский электровоз, способный развивать скорость до 200 км/ч. Используется на скоростных маршрутах, таких как Москва — Адлер.", 
+                features: "Первый российский двухсистемный (постоянный и переменный ток) пассажирский электровоз, способный развивать скорость до 200 км/ч. Разработан на Новочеркасском электровозостроительном заводе совместно с французской компанией Alstom. Используется на скоростных маршрутах, таких как Москва — Адлер, Москва — Санкт-Петербург. Отличается современным дизайном, комфортной кабиной и низким уровнем шума. Оснащен асинхронными тяговыми двигателями.", 
+                power: "7200 кВт",
+                speed: "200 км/ч",
+                weight: "120 тонн",
+                length: "21.5 м",
+                manufacturer: "НЭВЗ / Alstom",
                 file: "ep20.jpg" 
             },
             { 
-                name: "\"Ласточка\" (ЭС2Г)", 
+                name: "Ласточка (ЭС2Г)", 
                 type: "Электропоезд", 
                 year: 2014, 
-                features: "Высокотехнологичный пригородный и межрегиональный электропоезд, разработанный на базе Siemens Desiro. Обеспечивает высокий комфорт пассажиров и ускоренное сообщение между городами.", 
+                features: "Высокотехнологичный пригородный и межрегиональный электропоезд, разработанный на базе Siemens Desiro. Производится на заводе Уральские локомотивы в Верхней Пышме. Обеспечивает высокий комфорт пассажиров и ускоренное сообщение между городами. Используется на маршрутах Москва — Нижний Новгород, Москва — Казань, в Крыму и на других направлениях. Имеет низкопольные площадки, кондиционирование, информационные системы и комфортабельные кресла.", 
+                power: "5500 кВт",
+                speed: "160 км/ч",
+                weight: "328 тонн (10 вагонов)",
+                length: "200 м (10 вагонов)",
+                manufacturer: "Уральские локомотивы / Siemens",
                 file: "lastochka.jpg" 
             },
+            { 
+                name: "САПСАН (Velaro RUS)", 
+                type: "Скоростной поезд", 
+                year: 2009, 
+                features: "Российская модификация немецкого поезда Siemens Velaro. Самый быстрый поезд в России (до 250 км/ч). Совершает рейсы между Москвой, Санкт-Петербургом и Нижним Новгородом. Адаптирован к российским климатическим условиям и широкой колее. Назван в честь самой быстрой птицы в мире. Имеет два класса обслуживания: эконом и бизнес. Оснащен системами наклона кузова в поворотах, что позволяет сохранять высокую скорость на кривых участках.", 
+                power: "8000 кВт",
+                speed: "250 км/ч",
+                weight: "667 тонн (10 вагонов)",
+                length: "250 м (10 вагонов)",
+                manufacturer: "Siemens (Германия)",
+                file: "sapsan.jpg" 
+            },
+            { 
+                name: "ВЛ11", 
+                type: "Электровоз", 
+                year: 1975, 
+                features: "Магистральный грузопассажирский электровоз постоянного тока. Один из самых массовых локомотивов советского периода. Разработан на Тбилисском электровозостроительном заводе. Использовался по всему СССР, особенно на Урале, в Сибири и на Дальнем Востоке. Отличается простотой конструкции, надежностью и неприхотливостью в обслуживании. Многие локомотивы до сих пор используются на железных дорогах России и стран СНГ.", 
+                power: "6160 кВт",
+                speed: "100 км/ч",
+                weight: "150 тонн",
+                length: "33.4 м",
+                manufacturer: "ТЭВЗ (СССР)",
+                file: "vl11.jpg" 
+            },
+            { 
+                name: "ТЭП70", 
+                type: "Тепловоз", 
+                year: 1973, 
+                features: "Пассажирский тепловоз, способный развивать скорость до 160 км/ч. Разработан на Коломенском заводе. Широко используется на неэлектрифицированных участках для вождения пассажирских поездов. Отличается хорошей динамикой, комфортом для машинистов и современной (для своего времени) системой управления. Имеет характерный обтекаемый кузов. Выпускался с 1973 по 2006 год, построено более 1000 локомотивов. Используется на многих направлениях, включая фирменные поезда.", 
+                power: "2940 кВт",
+                speed: "160 км/ч",
+                weight: "129 тонн",
+                length: "20.42 м",
+                manufacturer: "Коломенский завод",
+                file: "tep70.jpg" 
+            },
+            { 
+                name: "2ЭС6 «Синара»", 
+                type: "Электровоз", 
+                year: 2006, 
+                features: "Современный грузовой электровоз постоянного тока российской разработки. Создан на заводе Уральские локомотивы в Верхней Пышме. Назван в честь реки Синара на Урале. Создан на замену устаревшим ВЛ10 и ВЛ11. Отличается высокой энергоэффективностью, современной кабиной управления с кондиционером и эргономичным постом управления. Используется на грузовых перевозках по всей России. Оснащен асинхронными тяговыми двигателями.", 
+                power: "6880 кВт",
+                speed: "120 км/ч",
+                weight: "2 × 100 тонн",
+                length: "2 × 17.5 м",
+                manufacturer: "Уральские локомотивы",
+                file: "2es6.jpg" 
+            },
+            { 
+                name: "ЧМЭ3", 
+                type: "Тепловоз", 
+                year: 1963, 
+                features: "Маневровый тепловоз чехословацкого производства, прозванный 'Чешкой'. Работает на российских железных дорогах с 1960-х годов. Несмотря на возраст, многие из них до сих пор в строю благодаря простоте и надежности. Используется для маневровых работ на станциях, в депо и на промышленных предприятиях. Имеет капотный тип кузова, что обеспечивает хороший обзор. Выпускался с 1963 по 1997 год, в СССР и Россию поставлено более 7000 локомотивов.", 
+                power: "993 кВт",
+                speed: "95 км/ч",
+                weight: "123 тонны",
+                length: "17.55 м",
+                manufacturer: "ČKD (Чехословакия)",
+                file: "chme3.jpg" 
+            },
+            { 
+                name: "ЭП2К", 
+                type: "Электровоз", 
+                year: 2013, 
+                features: "Пассажирский электровоз постоянного тока нового поколения. Разработан на Новочеркасском электровозостроительном заводе. Создан для замены устаревших ЧС7 и ВЛ65. Используется на большинстве пассажирских направлений неэлектрифицированных дорог. Отличается современным дизайном, комфортной кабиной с климат-контролем и низким уровнем шума. Оснащен асинхронными тяговыми двигателями и рекуперативным торможением. Имеет систему автоведения и диагностики.", 
+                power: "5200 кВт",
+                speed: "160 км/ч",
+                weight: "126 тонн",
+                length: "21.5 м",
+                manufacturer: "НЭВЗ",
+                file: "ep2k.jpg" 
+            },
+            { 
+                name: "Грузовой состав", 
+                type: "Железнодорожный состав", 
+                year: 2020, 
+                features: "Современный грузовой состав с вагонами нового поколения. Демонстрирует логистику грузовых перевозок РЖД - от сыпучих грузов до контейнеров. Оснащен системами автоматического контроля, GPS-мониторинга и датчиками состояния груза. Современные грузовые вагоны имеют увеличенную грузоподъемность, улучшенные тормозные системы и длительный срок службы. Составы могут достигать длины 1.5 км и перевозить до 10 000 тонн груза.", 
+                power: "Зависит от локомотива",
+                speed: "80-100 км/ч",
+                weight: "До 10 000 тонн",
+                length: "До 1500 м",
+                manufacturer: "Различные заводы",
+                file: "freight_train.jpg" 
+            }
         ];
 
         let currentSlide = 0;
@@ -564,7 +753,7 @@
                 slide.innerHTML = `
                     <div class="w-full h-full flex items-center justify-center">
                         <img src="images/locomotives/${imageFile}" alt="${loco.name}" class="loco-image" 
-                            onerror="this.onerror=null;this.src='https://placehold.co/900x750/D52B1E/ffffff?text=${loco.name}'">
+                            onerror="this.onerror=null;this.src='https://placehold.co/900x650/D52B1E/ffffff?text=${encodeURIComponent(loco.name)}'">
                     </div>
                 `;
                 track.appendChild(slide);
@@ -651,8 +840,30 @@
                     </div>
                 </div>
                 <div class="text-lg text-gray-800 leading-relaxed">
-                    <p class="mb-3 font-semibold text-gray-900">Особенности и факты:</p>
+                    <p class="mb-3 font-semibold text-gray-900">История и особенности:</p>
                     <p class="text-gray-700">${loco.features}</p>
+                </div>
+                <div class="loco-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Мощность</div>
+                        <div class="stat-value">${loco.power}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Макс. скорость</div>
+                        <div class="stat-value">${loco.speed}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Масса</div>
+                        <div class="stat-value">${loco.weight}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Длина</div>
+                        <div class="stat-value">${loco.length}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Производитель</div>
+                        <div class="stat-value">${loco.manufacturer}</div>
+                    </div>
                 </div>
             `;
         }
@@ -727,11 +938,35 @@
             return true;
         }
 
+        function cleanFileName(filename) {
+            return filename
+                .replace(/[^a-zA-Z0-9._-]/g, '_')
+                .replace(/\s+/g, '_')
+                .toLowerCase();
+        }
+
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
         function handleFileUpload() {
             fileListContainer.innerHTML = '';
             const files = fileInput.files;
 
             if (!validateFiles(files)) {
+                return;
+            }
+
+            if (isMobile() && files.length > 3) {
+                fileError.textContent = "На мобильных устройствах можно прикрепить не более 3 файлов";
+                fileError.classList.remove('hidden');
+                fileInput.classList.add('file-error');
+                
+                const dt = new DataTransfer();
+                for (let i = 0; i < Math.min(3, files.length); i++) {
+                    dt.items.add(files[i]);
+                }
+                fileInput.files = dt.files;
                 return;
             }
 
@@ -743,16 +978,20 @@
 
                 Array.from(files).forEach(file => {
                     const item = document.createElement('div');
-                    item.className = 'flex items-center justify-between text-sm text-gray-600 bg-gray-100 p-2 rounded-lg';
+                    item.className = 'flex items-center justify-between text-sm text-gray-600 bg-gray-100 p-2 rounded-lg mb-2';
                     item.innerHTML = `
                         <div class="flex items-center space-x-2">
-                            <svg class="w-4 h-4 text-rzd-red" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path></svg>
-                            <span>${file.name}</span>
+                            <svg class="w-4 h-4 text-rzd-red flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path>
+                            </svg>
+                            <span class="truncate max-w-[150px] sm:max-w-[200px]">${file.name}</span>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <span class="text-xs text-gray-400">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                            <button type="button" onclick="removeFile('${file.name}')" class="text-red-500 hover:text-red-700">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            <span class="text-xs text-gray-400 hidden sm:inline">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                            <button type="button" onclick="removeFile('${file.name.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700 p-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
                             </button>
                         </div>
                     `;
@@ -792,22 +1031,37 @@
                 return;
             }
 
+            if (isMobile() && files.length > 3) {
+                showErrorModal("На мобильных устройствах можно прикрепить не более 3 файлов");
+                return;
+            }
+
             submitButton.disabled = true;
             spinner.classList.remove('hidden');
 
             const formData = new FormData();
             formData.append('email', emailInput.value);
             formData.append('message', document.getElementById('message').value);
+            formData.append('userAgent', navigator.userAgent);
             
-            for (let file of files) {
-                formData.append('attachments', file);
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const cleanName = cleanFileName(file.name);
+                formData.append('attachments', file, cleanName);
             }
 
             try {
                 const response = await fetch('/api/bot', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json',
+                    }
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
                 const result = await response.json();
 
@@ -822,7 +1076,16 @@
 
             } catch (error) {
                 console.error("Fetch Error:", error);
-                showErrorModal("Произошла критическая ошибка сети. Проверьте подключение.");
+                
+                let errorMessage = "Произошла критическая ошибка сети. Проверьте подключение.";
+                
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage = "Нет подключения к интернету. Проверьте ваше соединение.";
+                } else if (error.message.includes('timeout')) {
+                    errorMessage = "Время ожидания истекло. Пожалуйста, попробуйте позже.";
+                }
+                
+                showErrorModal(errorMessage);
             } finally {
                 submitButton.disabled = false;
                 spinner.classList.add('hidden');
@@ -896,4 +1159,4 @@
         };
     </script>
 </body>
-                        </html>
+</html>
