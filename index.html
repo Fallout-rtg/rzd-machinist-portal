@@ -40,14 +40,10 @@
             transform: translateY(-2px);
         }
 
-        .loco-icon {
-            transform: rotate(-10deg);
-        }
-
         #locomotive-carousel {
             perspective: 1800px;
             overflow: hidden;
-            height: 750px;
+            height: 800px;
             position: relative;
         }
 
@@ -117,7 +113,7 @@
         .loco-image {
             object-fit: cover;
             width: 95%;
-            height: 450px;
+            height: 750px;
             max-width: 900px;
             border-radius: 0.75rem;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
@@ -183,12 +179,12 @@
 
         @media (max-width: 768px) {
             #locomotive-carousel {
-                height: 350px;
+                height: 400px;
                 perspective: 1200px;
             }
 
             .loco-image {
-                height: 300px;
+                height: 350px;
                 width: 90%;
             }
 
@@ -220,15 +216,21 @@
                 margin: 1rem;
                 width: calc(100% - 2rem);
             }
+
+            #locomotive-details {
+                min-height: 200px;
+                height: auto;
+                overflow: visible;
+            }
         }
 
         @media (max-width: 480px) {
             #locomotive-carousel {
-                height: 280px;
+                height: 320px;
             }
 
             .loco-image {
-                height: 240px;
+                height: 280px;
             }
 
             .nav-overlay {
@@ -242,6 +244,15 @@
             .mobile-menu-button {
                 display: block;
             }
+
+            #locomotive-details {
+                min-height: 180px;
+                padding: 1.5rem;
+            }
+        }
+
+        .touch-action {
+            touch-action: pan-y;
         }
     </style>
 </head>
@@ -326,7 +337,7 @@
         <section id="locomotives" class="py-10 section-scroll">
             <h3 class="text-3xl font-extrabold text-gray-900 mb-10 border-b-4 border-rzd-red pb-3">Интерактивная галерея локомотивов</h3>
             
-            <div id="locomotive-carousel" class="relative mx-auto max-w-5xl">
+            <div id="locomotive-carousel" class="relative mx-auto max-w-5xl touch-action">
                 <div id="carousel-track" class="carousel-track">
                 </div>
 
@@ -341,7 +352,7 @@
             <div id="carousel-pagination" class="flex justify-center space-x-3 mt-10">
             </div>
 
-            <div id="locomotive-details" class="mt-16 bg-white p-8 rounded-2xl shadow-2xl border-l-8 border-rzd-red transform hover:shadow-3xl transition duration-300">
+            <div id="locomotive-details" class="mt-16 bg-white p-8 rounded-2xl shadow-2xl border-l-8 border-rzd-red transform hover:shadow-3xl transition duration-300 min-h-[300px]">
                 <p class="text-center text-gray-500">Выберите локомотив выше, чтобы увидеть подробности.</p>
             </div>
         </section>
@@ -518,8 +529,8 @@
 
         let currentSlide = 0;
         let autoScrollInterval;
-        const CAROUSEL_DURATION = 5000;
-        const MANUAL_INTERACTION_DELAY = 10000;
+        const CAROUSEL_DURATION = 8000;
+        const MANUAL_INTERACTION_DELAY = 15000;
         const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
         const track = document.getElementById('carousel-track');
@@ -528,6 +539,9 @@
         const fileListContainer = document.getElementById('file-list');
         const fileInput = document.getElementById('file-attachments');
         const fileError = document.getElementById('file-error');
+        
+        let touchStartX = 0;
+        let touchEndX = 0;
         
         function preloadImages() {
             LOCOMOTIVES.forEach(loco => {
@@ -548,9 +562,9 @@
                 const imageFile = loco.file || 'chs2.jpg';
 
                 slide.innerHTML = `
-                    <div class="w-full h-full flex items-center justify-center" onclick="navigateCarousel(${index}, true)">
+                    <div class="w-full h-full flex items-center justify-center">
                         <img src="images/locomotives/${imageFile}" alt="${loco.name}" class="loco-image" 
-                            onerror="this.onerror=null;this.src='https://placehold.co/900x450/D52B1E/ffffff?text=${loco.name}'">
+                            onerror="this.onerror=null;this.src='https://placehold.co/900x750/D52B1E/ffffff?text=${loco.name}'">
                     </div>
                 `;
                 track.appendChild(slide);
@@ -641,6 +655,28 @@
                     <p class="text-gray-700">${loco.features}</p>
                 </div>
             `;
+        }
+
+        function handleTouchStart(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }
+
+        function handleTouchEnd(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    navigateCarousel(currentSlide + 1, true);
+                } else {
+                    navigateCarousel(currentSlide - 1, true);
+                }
+            }
         }
 
         const modal = document.getElementById('feedback-modal');
@@ -849,6 +885,10 @@
                 });
             });
 
+            const carousel = document.getElementById('locomotive-carousel');
+            carousel.addEventListener('touchstart', handleTouchStart, false);
+            carousel.addEventListener('touchend', handleTouchEnd, false);
+
             if (window.innerWidth < 640) {
                 document.getElementById('nav-prev').style.display = 'none';
                 document.getElementById('nav-next').style.display = 'none';
@@ -856,4 +896,4 @@
         };
     </script>
 </body>
-</html>
+                        </html>
