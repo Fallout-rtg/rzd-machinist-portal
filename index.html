@@ -194,12 +194,13 @@
             padding-top: 1.5rem;
             border-top: 2px dashed #e5e7eb;
         }
-
+        
         .stat-item {
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             padding: 1rem;
             border-radius: 0.5rem;
             border-left: 4px solid var(--rzd-red);
+            overflow: hidden;
         }
 
         .stat-label {
@@ -213,6 +214,9 @@
             font-size: 1.125rem;
             color: #111827;
             font-weight: 700;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
         }
 
         .loco-details-container {
