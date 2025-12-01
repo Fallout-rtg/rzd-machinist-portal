@@ -1,5 +1,4 @@
-const { Telegraf, Markup } = require('telegraf');
-const Busboy = require('busboy');
+const { Telegraf } = require('telegraf');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -17,6 +16,7 @@ module.exports = async (req, res) => {
   const SITE_URL = 'https://rzd-machinist-portal.vercel.app';
 
   if (!BOT_TOKEN || !OWNER_ID) {
+    console.error('Missing environment variables');
     return res.status(500).json({ error: 'Bot configuration missing' });
   }
 
@@ -78,7 +78,6 @@ module.exports = async (req, res) => {
   ];
 
   const feedbackQueue = [];
-  const userStates = new Map();
 
   async function sendFeedbackToOwner(email, message, files, userAgent) {
     try {
@@ -105,33 +104,55 @@ module.exports = async (req, res) => {
         for (const fileData of files) {
           try {
             await new Promise(resolve => setTimeout(resolve, 500));
-            const cleanFilename = cleanFileName(fileData.filename);
+
+            const cleanFilename = fileData.filename.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\s+/g, '_').toLowerCase();
             
             if (fileData.buffer.length === 0) continue;
-
-            const fileBuffer = Buffer.isBuffer(fileData.buffer) ? fileData.buffer : Buffer.from(fileData.buffer);
 
             if (fileData.mimeType.startsWith('image/')) {
               await bot.telegram.sendPhoto(
                 OWNER_ID,
-                { source: fileBuffer },
-                { caption: `📸 ${cleanFilename}`, disable_notification: true }
+                { source: fileData.buffer },
+                { 
+                  caption: `📸 ${cleanFilename}`,
+                  disable_notification: true 
+                }
               );
             } else if (fileData.mimeType.startsWith('video/')) {
               await bot.telegram.sendVideo(
                 OWNER_ID,
-                { source: fileBuffer },
-                { caption: `🎥 ${cleanFilename}`, disable_notification: true }
+                { source: fileData.buffer },
+                { 
+                  caption: `🎥 ${cleanFilename}`,
+                  disable_notification: true 
+                }
+              );
+            } else if (fileData.mimeType.includes('pdf')) {
+              await bot.telegram.sendDocument(
+                OWNER_ID,
+                { source: fileData.buffer, filename: cleanFilename },
+                { 
+                  caption: `📄 ${cleanFilename}`,
+                  disable_notification: true 
+                }
               );
             } else {
               await bot.telegram.sendDocument(
                 OWNER_ID,
-                { source: fileBuffer, filename: cleanFilename },
-                { caption: `📎 ${cleanFilename}`, disable_notification: true }
+                { source: fileData.buffer, filename: cleanFilename },
+                { 
+                  caption: `📎 ${cleanFilename}`,
+                  disable_notification: true 
+                }
               );
             }
+            
           } catch (fileError) {
-            await bot.telegram.sendMessage(OWNER_ID, `❌ Ошибка при отправке файла "${fileData.filename}"`);
+            console.error(`Error sending file ${fileData.filename}:`, fileError.message);
+            await bot.telegram.sendMessage(
+              OWNER_ID,
+              `❌ Ошибка при отправке файла "${fileData.filename}": Файл не может быть отправлен через бота`
+            );
           }
         }
       } else {
@@ -140,14 +161,12 @@ module.exports = async (req, res) => {
           disable_web_page_preview: true 
         });
       }
+
       return true;
     } catch (error) {
+      console.error('Error sending feedback to owner:', error);
       return false;
     }
-  }
-
-  function cleanFileName(filename) {
-    return filename.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\s+/g, '_').toLowerCase();
   }
 
   function formatLocomotiveInfo(loco) {
@@ -162,102 +181,18 @@ module.exports = async (req, res) => {
            `📝 *Описание:*\n${loco.description}`;
   }
 
-  async function sendLocomotivesMenu(chatId, messageId = null) {
-    const menuPhotoUrl = `${SITE_URL}/images/locomotives/locomotives_commands.jpg`;
-    const menuText = `🚂 *Локомотивы РЖД*\n\n` +
-                     `*Выберите локомотив для получения подробной информации:*\n\n` +
-                     `⚡ *Доступно в боте:*\n` +
-                     `• ЧС2 - легендарный "Чебурашка"\n` +
-                     `• ВЛ80С - трудяга грузовых перевозок\n` +
-                     `• 2ТЭ25КМ - современный "Витязь"\n` +
-                     `• ЭП20 - скоростной двухсистемный\n\n` +
-                     `🌐 *На сайте доступно ещё больше моделей!*`;
-    
-    const keyboard = Markup.inlineKeyboard([
-      [Markup.button.callback('ЧС2', 'loco_chs2'), Markup.button.callback('ВЛ80С', 'loco_vl80s')],
-      [Markup.button.callback('2ТЭ25КМ', 'loco_2te25km'), Markup.button.callback('ЭП20', 'loco_ep20')],
-      [Markup.button.callback('🔙 Назад', 'back_to_main')]
-    ]);
-
-    try {
-      if (messageId) {
-        try {
-          await bot.telegram.editMessageMedia(
-            chatId,
-            messageId,
-            null,
-            {
-              type: 'photo',
-              media: menuPhotoUrl,
-              caption: menuText,
-              parse_mode: 'Markdown'
-            },
-            { reply_markup: keyboard.reply_markup }
-          );
-        } catch (e) {
-          await bot.telegram.deleteMessage(chatId, messageId).catch(() => {});
-          await bot.telegram.sendPhoto(
-            chatId,
-            menuPhotoUrl,
-            {
-              caption: menuText,
-              parse_mode: 'Markdown',
-              reply_markup: keyboard.reply_markup
-            }
-          );
-        }
-      } else {
-        await bot.telegram.sendPhoto(
-          chatId,
-          menuPhotoUrl,
-          {
-            caption: menuText,
-            parse_mode: 'Markdown',
-            reply_markup: keyboard.reply_markup
-          }
-        );
-      }
-    } catch (error) {
-      console.error('Error sending locomotives menu:', error);
-    }
-  }
-
-  async function sendLocomotiveInfo(chatId, messageId, locoId) {
-    const loco = LOCOMOTIVES.find(l => l.id === locoId);
-    if (!loco) return;
-
-    const locoText = formatLocomotiveInfo(loco);
-    const keyboard = Markup.inlineKeyboard([
-      [Markup.button.url('🌐 На сайт', `${SITE_URL}#locomotives`)],
-      [Markup.button.callback('📋 Меню', 'locomotives')]
-    ]);
-
-    try {
-      await bot.telegram.editMessageMedia(
-        chatId,
-        messageId,
-        null,
-        {
-          type: 'photo',
-          media: loco.photoUrl,
-          caption: locoText,
-          parse_mode: 'Markdown'
-        },
-        { reply_markup: keyboard.reply_markup }
-      );
-    } catch (error) {
-      console.error('Error sending locomotive info:', error);
-    }
-  }
-
   try {
     if (req.method === 'POST') {
       const contentType = req.headers['content-type'] || '';
 
       if (contentType.includes('multipart/form-data')) {
-        const bb = Busboy({ 
+        const busboy = require('busboy');
+        const bb = busboy({ 
           headers: req.headers,
-          limits: { fileSize: 50 * 1024 * 1024, files: 10 }
+          limits: {
+            fileSize: 50 * 1024 * 1024,
+            files: 10
+          }
         });
         
         let email = '';
@@ -277,12 +212,28 @@ module.exports = async (req, res) => {
             const { filename, mimeType } = info;
             const chunks = [];
             
-            file.on('data', (chunk) => chunks.push(chunk));
+            file.on('data', (chunk) => {
+              chunks.push(chunk);
+            });
+
+            file.on('limit', () => {
+              console.log(`File ${filename} превысил лимит размера`);
+            });
+
             file.on('end', () => {
               if (chunks.length === 0) return;
+              
               const buffer = Buffer.concat(chunks);
-              files.push({ filename: filename || 'file', mimeType, size: buffer.length });
-              fileBuffers.push({ filename: filename || 'file', buffer, mimeType });
+              files.push({
+                filename: filename || 'unnamed_file',
+                mimeType: mimeType || 'application/octet-stream',
+                size: buffer.length
+              });
+              fileBuffers.push({
+                filename: filename || 'unnamed_file',
+                buffer,
+                mimeType: mimeType || 'application/octet-stream'
+              });
             });
           }
         });
@@ -292,14 +243,47 @@ module.exports = async (req, res) => {
             return res.status(400).json({ error: 'Email and message are required' });
           }
 
-          const success = await sendFeedbackToOwner(email, message, fileBuffers, userAgent);
-          
-          if (success) {
-            feedbackQueue.push({ email, message, files: files.length, timestamp: new Date().toISOString() });
-            if (feedbackQueue.length > 100) feedbackQueue.shift();
-            res.status(200).json({ success: true, message: 'Sent' });
-          } else {
-            res.status(500).json({ error: 'Failed' });
+          const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yandex\.(ru|com))$/i;
+          if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Only Gmail and Yandex emails are allowed' });
+          }
+
+          try {
+            const success = await sendFeedbackToOwner(email, message, fileBuffers, userAgent);
+            
+            if (success) {
+              feedbackQueue.push({
+                email,
+                message,
+                files: files.length,
+                timestamp: new Date().toISOString()
+              });
+              
+              if (feedbackQueue.length > 100) {
+                feedbackQueue.shift();
+              }
+              
+              res.status(200).json({ 
+                success: true, 
+                message: 'Message and files sent successfully',
+                filesCount: files.length
+              });
+            } else {
+              res.status(500).json({ error: 'Failed to send message to owner' });
+            }
+            
+          } catch (error) {
+            console.error('Error processing message:', error);
+            
+            let errorMessage = 'Failed to send message';
+            if (error.response) {
+              errorMessage = `Telegram API error: ${error.response.description || error.message}`;
+            }
+            
+            res.status(500).json({ 
+              error: errorMessage,
+              details: error.message 
+            });
           }
         });
 
@@ -309,6 +293,7 @@ module.exports = async (req, res) => {
       
       else if (contentType.includes('application/json') || contentType.includes('application/x-www-form-urlencoded')) {
         let update;
+        
         if (typeof req.body === 'string') {
           update = JSON.parse(req.body);
         } else {
@@ -324,36 +309,126 @@ module.exports = async (req, res) => {
           const isOwner = userId.toString() === OWNER_ID;
 
           if (text.startsWith('/start')) {
-            userStates.set(userId, 'main');
-            const welcomeText = isOwner 
-              ? `👋 *Привет, создатель!*\n\nЯ ваш бот для демо-портала.\n\nВыберите действие:`
-              : `🚂 *Демо-портал машиниста РЖД*\n\n*Добро пожаловать, ${userName}!*\n\nЯ помогу вам узнать больше о локомотивах.\n\nВыберите действие:`;
-
-            await bot.telegram.sendMessage(
+            if (isOwner) {
+              await bot.telegram.sendMessage(
+                chatId,
+                `👋 *Привет, создатель!*\n\nЯ ваш бот для демо-портала машиниста РЖД.\n\n📊 *Статистика за последнее время:*\n• Обратных связей: ${feedbackQueue.length}\n• Последнее: ${feedbackQueue.length > 0 ? new Date(feedbackQueue[feedbackQueue.length-1].timestamp).toLocaleString('ru-RU') : 'нет данных'}\n\nВыберите действие:`,
+                { 
+                  parse_mode: 'Markdown',
+                  reply_markup: {
+                    inline_keyboard: [
+                      [{ text: '🌐 Перейти на сайт', url: SITE_URL }],
+                      [{ text: '🚂 Показать локомотивы', callback_data: 'locomotives' }]
+                    ]
+                  }
+                }
+              );
+            } else {
+              await bot.telegram.sendMessage(
+                chatId,
+                `🚂 *Демо-портал машиниста РЖД*\n\n*Добро пожаловать, ${userName}!*\n\nЯ помогу вам узнать больше о локомотивах и профессии машиниста.\n\nВыберите действие:`,
+                {
+                  parse_mode: 'Markdown',
+                  reply_markup: {
+                    inline_keyboard: [
+                      [{ text: '🌐 Перейти на сайт', url: SITE_URL }],
+                      [{ text: '🚂 Показать локомотивы', callback_data: 'locomotives' }]
+                    ]
+                  }
+                }
+              );
+            }
+          } 
+          else if (text.startsWith('/locomotives') || text.toLowerCase().includes('локомотив')) {
+            await bot.telegram.sendPhoto(
               chatId,
-              welcomeText,
-              { 
+              `${SITE_URL}/images/locomotives/locomotives_commands.jpg`,
+              {
+                caption: `🚂 *Локомотивы РЖД*\n\n` +
+                         `*Выберите локомотив для получения подробной информации:*\n\n` +
+                         `⚡ *Доступно в боте:*\n` +
+                         `• ЧС2 - легендарный "Чебурашка"\n` +
+                         `• ВЛ80С - трудяга грузовых перевозок\n` +
+                         `• 2ТЭ25КМ - современный "Витязь"\n` +
+                         `• ЭП20 - скоростной двухсистемный\n\n` +
+                         `🌐 *На сайте доступно ещё больше моделей!*`,
                 parse_mode: 'Markdown',
-                reply_markup: Markup.inlineKeyboard([
-                  [Markup.button.url('🌐 Перейти на сайт', SITE_URL)],
-                  [Markup.button.callback('🚂 Показать локомотивы', 'locomotives')]
-                ]).reply_markup
+                reply_markup: {
+                  inline_keyboard: [
+                    [
+                      { text: 'ЧС2', callback_data: 'loco_chs2' },
+                      { text: 'ВЛ80С', callback_data: 'loco_vl80s' }
+                    ],
+                    [
+                      { text: '2ТЭ25КМ', callback_data: 'loco_2te25km' },
+                      { text: 'ЭП20', callback_data: 'loco_ep20' }
+                    ],
+                    [{ text: '🔙 Назад', callback_data: 'back_to_main' }]
+                  ]
+                }
               }
             );
-          } 
+          }
           else if (text.startsWith('/help')) {
             await bot.telegram.sendMessage(
               chatId,
-              `🆘 *Помощь*\n\n*Команды:*\n/start - Меню\n/help - Справка\n\n*Админ:*\n/stats - Статистика`,
-              { parse_mode: 'Markdown' }
+              `🆘 *Помощь*\n\n*Доступные команды:*\n/start - Главное меню\n/locomotives - Информация о локомотивах\n/help - Эта справка\n\n*Для администратора:*\n/stats - Статистика бота`,
+              {
+                parse_mode: 'Markdown'
+              }
             );
           }
           else if (text.startsWith('/stats') && isOwner) {
+            const stats = {
+              totalFeedback: feedbackQueue.length,
+              last24h: feedbackQueue.filter(f => 
+                new Date(f.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+              ).length,
+              lastWeek: feedbackQueue.filter(f => 
+                new Date(f.timestamp) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+              ).length,
+              withFiles: feedbackQueue.filter(f => f.files > 0).length
+            };
+            
             await bot.telegram.sendMessage(
               chatId,
-              `📊 *Статистика*\nСообщений: ${feedbackQueue.length}`,
-              { parse_mode: 'Markdown' }
+              `📊 *Статистика бота*\n\n` +
+              `📨 *Всего обратных связей:* ${stats.totalFeedback}\n` +
+              `⏰ *За последние 24 часа:* ${stats.last24h}\n` +
+              `📅 *За последнюю неделю:* ${stats.lastWeek}\n` +
+              `📎 *С файлами:* ${stats.withFiles}\n\n` +
+              `📋 *Последние 5 сообщений:*\n${
+                feedbackQueue.slice(-5).reverse().map((f, i) => 
+                  `${i+1}. ${f.email}: ${f.message.substring(0, 50)}${f.message.length > 50 ? '...' : ''}`
+                ).join('\n') || 'Нет данных'
+              }`,
+              {
+                parse_mode: 'Markdown'
+              }
             );
+          }
+          else if (text && !text.startsWith('/')) {
+            const loco = LOCOMOTIVES.find(l => 
+              l.name.toLowerCase() === text.toLowerCase() || 
+              text.toLowerCase().includes(l.name.toLowerCase())
+            );
+            
+            if (loco) {
+              await bot.telegram.sendPhoto(
+                chatId,
+                loco.photoUrl,
+                {
+                  caption: formatLocomotiveInfo(loco),
+                  parse_mode: 'Markdown',
+                  reply_markup: {
+                    inline_keyboard: [
+                      [{ text: '🌐 На сайт', url: `${SITE_URL}#locomotives` }],
+                      [{ text: '📋 Меню', callback_data: 'locomotives' }]
+                    ]
+                  }
+                }
+              );
+            }
           }
         }
 
@@ -361,42 +436,104 @@ module.exports = async (req, res) => {
           const query = update.callback_query;
           const chatId = query.message.chat.id;
           const messageId = query.message.message_id;
-          const userId = query.from.id;
           const data = query.data;
-          const isOwner = userId.toString() === OWNER_ID;
 
           try {
             if (data === 'locomotives') {
-              await sendLocomotivesMenu(chatId, messageId);
+              await bot.telegram.editMessageMedia(
+                chatId,
+                messageId,
+                null,
+                {
+                  type: 'photo',
+                  media: `${SITE_URL}/images/locomotives/locomotives_commands.jpg`,
+                  caption: `🚂 *Локомотивы РЖД*\n\n` +
+                           `*Выберите локомотив для получения подробной информации:*\n\n` +
+                           `⚡ *Доступно в боте:*\n` +
+                           `• ЧС2 - легендарный "Чебурашка"\n` +
+                           `• ВЛ80С - трудяга грузовых перевозок\n` +
+                           `• 2ТЭ25КМ - современный "Витязь"\n` +
+                           `• ЭП20 - скоростной двухсистемный\n\n` +
+                           `🌐 *На сайте доступно ещё больше моделей!*`,
+                  parse_mode: 'Markdown'
+                },
+                {
+                  reply_markup: {
+                    inline_keyboard: [
+                      [
+                        { text: 'ЧС2', callback_data: 'loco_chs2' },
+                        { text: 'ВЛ80С', callback_data: 'loco_vl80s' }
+                      ],
+                      [
+                        { text: '2ТЭ25КМ', callback_data: 'loco_2te25km' },
+                        { text: 'ЭП20', callback_data: 'loco_ep20' }
+                      ],
+                      [{ text: '🔙 Назад', callback_data: 'back_to_main' }]
+                    ]
+                  }
+                }
+              );
             }
             else if (data.startsWith('loco_')) {
               const locoId = data.split('_')[1];
-              await sendLocomotiveInfo(chatId, messageId, locoId);
+              const loco = LOCOMOTIVES.find(l => l.id === locoId);
+              
+              if (loco) {
+                await bot.telegram.editMessageMedia(
+                  chatId,
+                  messageId,
+                  null,
+                  {
+                    type: 'photo',
+                    media: loco.photoUrl,
+                    caption: formatLocomotiveInfo(loco),
+                    parse_mode: 'Markdown'
+                  },
+                  {
+                    reply_markup: {
+                      inline_keyboard: [
+                        [{ text: '🌐 На сайт', url: `${SITE_URL}#locomotives` }],
+                        [{ text: '📋 Меню', callback_data: 'locomotives' }]
+                      ]
+                    }
+                  }
+                );
+              }
             }
             else if (data === 'back_to_main') {
               try {
                 await bot.telegram.deleteMessage(chatId, messageId);
-              } catch (e) {}
+              } catch (deleteError) {
+                console.error('Error deleting message:', deleteError);
+              }
               
-              const welcomeText = isOwner 
-                ? `👋 *Привет, создатель!*\n\nЯ ваш бот для демо-портала.\n\nВыберите действие:`
-                : `👋 *Главное меню*\n\nВыберите действие:`;
-
               await bot.telegram.sendMessage(
                 chatId,
-                welcomeText,
-                { 
+                `👋 *Главное меню*\n\nВыберите действие:`,
+                {
                   parse_mode: 'Markdown',
-                  reply_markup: Markup.inlineKeyboard([
-                    [Markup.button.url('🌐 Перейти на сайт', SITE_URL)],
-                    [Markup.button.callback('🚂 Показать локомотивы', 'locomotives')]
-                  ]).reply_markup
+                  reply_markup: {
+                    inline_keyboard: [
+                      [{ text: '🌐 Перейти на сайт', url: SITE_URL }],
+                      [{ text: '🚂 Показать локомотивы', callback_data: 'locomotives' }]
+                    ]
+                  }
                 }
               );
             }
+
             await bot.telegram.answerCallbackQuery(query.id);
           } catch (error) {
-            console.error('CB Error:', error);
+            console.error('Error handling callback query:', error);
+            
+            try {
+              await bot.telegram.sendMessage(
+                chatId,
+                `❌ Произошла ошибка. Попробуйте ещё раз.`
+              );
+            } catch (sendError) {
+              console.error('Error sending error message:', sendError);
+            }
           }
         }
 
@@ -406,13 +543,34 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === 'GET') {
-      return res.status(200).json({ status: 'Bot is running' });
+      const totalFeedback = feedbackQueue.length;
+      const last24h = feedbackQueue.filter(f => 
+        new Date(f.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+      ).length;
+      
+      return res.status(200).json({ 
+        status: 'Bot is running', 
+        project: 'RZD Machinist Portal',
+        website: SITE_URL,
+        features: 'File upload support up to 50MB, Locomotive information, Feedback system',
+        statistics: {
+          totalFeedback,
+          last24h,
+          locomotivesInBot: LOCOMOTIVES.length
+        },
+        timestamp: new Date().toISOString()
+      });
     }
 
     res.status(405).json({ error: 'Method not allowed' });
     
   } catch (error) {
     console.error('Bot error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      success: false, 
+      error: 'Internal server error',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    });
   }
 };
