@@ -440,13 +440,16 @@ module.exports = async (req, res) => {
 
           try {
             if (data === 'locomotives') {
-              await bot.telegram.editMessageMedia(
+              try {
+                await bot.telegram.deleteMessage(chatId, messageId);
+              } catch (deleteError) {
+                console.error('Error deleting message:', deleteError);
+              }
+              
+              await bot.telegram.sendPhoto(
                 chatId,
-                messageId,
-                null,
+                `${SITE_URL}/images/locomotives/locomotives_commands.jpg`,
                 {
-                  type: 'photo',
-                  media: `${SITE_URL}/images/locomotives/locomotives_commands.jpg`,
                   caption: `🚂 *Локомотивы РЖД*\n\n` +
                            `*Выберите локомотив для получения подробной информации:*\n\n` +
                            `⚡ *Доступно в боте:*\n` +
@@ -455,9 +458,7 @@ module.exports = async (req, res) => {
                            `• 2ТЭ25КМ - современный "Витязь"\n` +
                            `• ЭП20 - скоростной двухсистемный\n\n` +
                            `🌐 *На сайте доступно ещё больше моделей!*`,
-                  parse_mode: 'Markdown'
-                },
-                {
+                  parse_mode: 'Markdown',
                   reply_markup: {
                     inline_keyboard: [
                       [
@@ -479,17 +480,18 @@ module.exports = async (req, res) => {
               const loco = LOCOMOTIVES.find(l => l.id === locoId);
               
               if (loco) {
-                await bot.telegram.editMessageMedia(
+                try {
+                  await bot.telegram.deleteMessage(chatId, messageId);
+                } catch (deleteError) {
+                  console.error('Error deleting message:', deleteError);
+                }
+                
+                await bot.telegram.sendPhoto(
                   chatId,
-                  messageId,
-                  null,
+                  loco.photoUrl,
                   {
-                    type: 'photo',
-                    media: loco.photoUrl,
                     caption: formatLocomotiveInfo(loco),
-                    parse_mode: 'Markdown'
-                  },
-                  {
+                    parse_mode: 'Markdown',
                     reply_markup: {
                       inline_keyboard: [
                         [{ text: '🌐 На сайт', url: `${SITE_URL}#locomotives` }],
