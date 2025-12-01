@@ -506,7 +506,7 @@
                 <div class="bg-white p-8 rounded-xl shadow-xl border-t-4 border-gray-200 hover:border-rzd-red transition duration-300">
                     <div class="text-rzd-red text-4xl font-extrabold mb-3">01.</div>
                     <h4 class="text-xl font-bold mb-3">Отраслевое образование</h4>
-                    <p class="text-gray-700">Начальное звено — получение среднего специального или высшего образования в профильных учебных заведениях РЖД. Это база знаний о подвижном составе и инфраструктуре.</p>
+                    <p class="text-gray-700">Начальное звено — получение среднего специального или высшего образования в профильных учебных заведениях РЖД. Это база знаний об подвижном составе и инфраструктуре.</p>
                 </div>
                 
                 <div class="bg-white p-8 rounded-xl shadow-xl border-t-4 border-gray-200 hover:border-rzd-red transition duration-300">
@@ -561,7 +561,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-3" id="file-uploader-controls">
                         <input type="file" id="file-attachments" name="attachments" multiple class="hidden" onchange="handleFileUpload()">
                         <button type="button" onclick="document.getElementById('file-attachments').click()" class="flex items-center justify-center w-12 h-12 bg-rzd-red text-white rounded-full text-2xl font-bold hover:bg-red-700 transition duration-150 transform hover:rotate-45 shadow-md">
                             +
@@ -574,6 +574,17 @@
                 <div id="file-list" class="mb-6 space-y-2">
                 </div>
 
+                <div class="mb-6">
+                    <a href="https://t.me/rzd_machinist_portal_bot?start=admin_request" target="_blank" class="w-full py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition duration-150 shadow-xl shadow-blue-300/50 flex items-center justify-center space-x-2">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11.947 18.232c-.378 0-.616-.143-.888-.38l-1.956-1.896 4.29-2.735c.189-.12.366-.25.17-.463-.16-.207-.577-.123-.746-.06l-4.707 3.012-2.185-.716c-.5-.16-.906-.38-1.07-.63-.16-.25-.04-1.01.62-1.63L9.623 7.82c.42-.4.76-.723 1.25-.97.48-.25 1.1-.38 1.95-.38.85 0 1.55.13 2.1.39.55.26.96.6 1.25 1.02.28.43.37.95.2 1.56-.05.15-.22.3-.49.43l-4.14 1.84 4.54 3.033c.17.11.35.25.18.44-.14.18-.55.12-.75.05l-4.75-1.55zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill-rule="evenodd"/>
+                        </svg>
+                        <span>Отправить файлы через Telegram-бот</span>
+                    </a>
+                    <p class="text-center text-xs text-gray-500 mt-2">
+                        Используйте Telegram, если Вам нужно отправить более 3 файлов или их общий размер превышает 2 МБ.
+                    </p>
+                </div>
                 <button type="submit" id="submit-button" class="w-full py-3 bg-rzd-red text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 shadow-xl shadow-red-300/50 flex items-center justify-center">
                     <svg id="spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -743,6 +754,9 @@
         const CAROUSEL_DURATION = 8000;
         const MANUAL_INTERACTION_DELAY = 15000;
         const MAX_FILE_SIZE = 50 * 1024 * 1024;
+        // НОВЫЕ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ДЛЯ ФАЙЛОВ
+        const MAX_TOTAL_SIZE = 2 * 1024 * 1024; // 2 МБ
+        let attachedFiles = [];
 
         const track = document.getElementById('carousel-track');
         const paginationContainer = document.getElementById('carousel-pagination');
@@ -916,6 +930,7 @@
         const emailError = document.getElementById('email-error');
         const submitButton = document.getElementById('submit-button');
         const spinner = document.getElementById('spinner');
+        const fileUploaderControls = document.getElementById('file-uploader-controls'); // Новый ID для блока управления загрузкой
 
         function toggleMobileMenu() {
             document.querySelector('.mobile-menu').classList.toggle('active');
@@ -924,6 +939,10 @@
         function openModal() {
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            // При открытии модалки, если мы на ПК, обновляем информацию о файлах, если они остались
+            if (!isMobile()) {
+                handleFileUpload();
+            }
         }
 
         function closeModal() {
@@ -942,16 +961,45 @@
             const regex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yandex\.(ru|com))$/i;
             return regex.test(email);
         }
-
-        function validateFiles(files) {
-            for (let file of files) {
-                if (file.size > MAX_FILE_SIZE) {
-                    fileError.textContent = `Файл "${file.name}" превышает максимальный размер 50MB`;
+        
+        // НОВАЯ ЛОГИКА ВАЛИДАЦИИ ФАЙЛОВ
+        function validateFiles() {
+            // Мобильные устройства не должны иметь файлов
+            if (isMobile()) {
+                if (attachedFiles.length > 0) {
+                    // Этого не должно случиться, так как элементы скрыты, но на всякий случай
+                    fileError.textContent = `Функция прикрепления файлов недоступна на мобильных устройствах.`;
                     fileError.classList.remove('hidden');
-                    fileInput.classList.add('file-error');
                     return false;
                 }
+                return true;
             }
+
+            // Проверка для ПК: максимальное количество
+            if (attachedFiles.length > 3) {
+                fileError.textContent = `Максимум 3 файла. Удалите лишние файлы.`;
+                fileError.classList.remove('hidden');
+                return false;
+            }
+
+            let totalSize = 0;
+            for (let file of attachedFiles) {
+                // Проверка на размер каждого файла (старая логика 50МБ)
+                if (file.size > MAX_FILE_SIZE) {
+                    fileError.textContent = `Файл "${file.name}" превышает максимальный размер 50MB.`;
+                    fileError.classList.remove('hidden');
+                    return false;
+                }
+                totalSize += file.size;
+            }
+
+            // Проверка для ПК: общий размер
+            if (totalSize > MAX_TOTAL_SIZE) {
+                fileError.textContent = `Общий размер файлов (${(totalSize / 1024 / 1024).toFixed(2)} МБ) превышает лимит 2 МБ.`;
+                fileError.classList.remove('hidden');
+                return false;
+            }
+
             fileError.classList.add('hidden');
             fileInput.classList.remove('file-error');
             return true;
@@ -968,36 +1016,43 @@
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         }
 
+        // НОВАЯ ЛОГИКА ОБРАБОТКИ ЗАГРУЗКИ ФАЙЛОВ (с сохранением)
         function handleFileUpload() {
-            fileListContainer.innerHTML = '';
-            const files = fileInput.files;
+            const newFiles = fileInput.files;
 
-            if (!validateFiles(files)) {
-                return;
-            }
-
-            if (isMobile() && files.length > 3) {
-                fileError.textContent = "На мобильных устройствах можно прикрепить не более 3 файлов";
-                fileError.classList.remove('hidden');
-                fileInput.classList.add('file-error');
-                
-                const dt = new DataTransfer();
-                for (let i = 0; i < Math.min(3, files.length); i++) {
-                    dt.items.add(files[i]);
+            // 1. Добавляем новые файлы в глобальный массив, исключая дубликаты
+            Array.from(newFiles).forEach(newFile => {
+                const isDuplicate = attachedFiles.some(
+                    (existingFile) => existingFile.name === newFile.name && existingFile.size === newFile.size
+                );
+                if (!isDuplicate) {
+                    attachedFiles.push(newFile);
                 }
-                fileInput.files = dt.files;
-                return;
-            }
+            });
 
-            if (files.length > 0) {
+            // 2. Очищаем input, чтобы можно было выбрать те же файлы снова (ибо логика сохранения теперь в attachedFiles)
+            fileInput.value = '';
+
+            // 3. Валидация (проверяет новые лимиты)
+            validateFiles();
+            
+            // 4. Рендеринг текущего списка
+            fileListContainer.innerHTML = '';
+            
+            if (attachedFiles.length > 0) {
                 const title = document.createElement('p');
                 title.className = 'text-sm font-semibold text-gray-700 mb-2';
-                title.textContent = `Прикрепленные файлы (${files.length}):`;
+                title.textContent = `Прикрепленные файлы (${attachedFiles.length}):`;
                 fileListContainer.appendChild(title);
 
-                Array.from(files).forEach(file => {
+                attachedFiles.forEach(file => {
+                    // Используем имя файла и размер как уникальный ID для удаления
+                    const uniqueId = cleanFileName(file.name) + '_' + file.size; 
+                    
                     const item = document.createElement('div');
                     item.className = 'flex items-center justify-between text-sm text-gray-600 bg-gray-100 p-2 rounded-lg mb-2';
+                    item.id = `file-item-${uniqueId}`;
+
                     item.innerHTML = `
                         <div class="flex items-center space-x-2">
                             <svg class="w-4 h-4 text-rzd-red flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1007,7 +1062,7 @@
                         </div>
                         <div class="flex items-center space-x-2">
                             <span class="text-xs text-gray-400 hidden sm:inline">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                            <button type="button" onclick="removeFile('${file.name.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700 p-1">
+                            <button type="button" onclick="removeFile('${uniqueId}')" class="text-red-500 hover:text-red-700 p-1">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
@@ -1019,20 +1074,19 @@
             }
         }
 
-        function removeFile(fileName) {
-            const dt = new DataTransfer();
-            const files = fileInput.files;
+        // НОВАЯ ЛОГИКА УДАЛЕНИЯ ФАЙЛОВ
+        function removeFile(uniqueId) {
+            const [fileNamePart, fileSize] = uniqueId.split('_');
             
-            for (let file of files) {
-                if (file.name !== fileName) {
-                    dt.items.add(file);
-                }
-            }
-            
-            fileInput.files = dt.files;
-            handleFileUpload();
+            // Фильтруем массив, удаляя файл с совпадающим именем (после cleanFileName) И размером
+            attachedFiles = attachedFiles.filter(file => {
+                return !(cleanFileName(file.name) === fileNamePart && file.size == fileSize);
+            });
+
+            handleFileUpload(); // Перерисовываем список и запускаем валидацию
         }
 
+        // ОБНОВЛЕННАЯ ЛОГИКА ОТПРАВКИ ФОРМЫ
         async function submitForm(event) {
             event.preventDefault();
             
@@ -1045,13 +1099,8 @@
                 emailError.classList.add('hidden');
             }
 
-            const files = fileInput.files;
-            if (!validateFiles(files)) {
-                return;
-            }
-
-            if (isMobile() && files.length > 3) {
-                showErrorModal("На мобильных устройствах можно прикрепить не более 3 файлов");
+            // Валидация файлов
+            if (!validateFiles()) {
                 return;
             }
 
@@ -1063,11 +1112,11 @@
             formData.append('message', document.getElementById('message').value);
             formData.append('userAgent', navigator.userAgent);
             
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
+            // Используем массив attachedFiles для отправки
+            attachedFiles.forEach(file => {
                 const cleanName = cleanFileName(file.name);
                 formData.append('attachments', file, cleanName);
-            }
+            });
 
             try {
                 const response = await fetch('/api/bot', {
@@ -1087,6 +1136,7 @@
                 if (result.success) {
                     form.reset();
                     fileListContainer.innerHTML = '';
+                    attachedFiles = []; // Сброс массива файлов после успешной отправки
                     closeModal();
                     showNotification();
                 } else {
@@ -1175,6 +1225,26 @@
             if (window.innerWidth < 640) {
                 document.getElementById('nav-prev').style.display = 'none';
                 document.getElementById('nav-next').style.display = 'none';
+            }
+            
+            // НОВАЯ ЛОГИКА ДЛЯ СКРЫТИЯ НА МОБИЛЬНЫХ И ОБНОВЛЕНИЯ ТЕКСТА
+            const infoSpan = document.querySelector('#file-uploader-controls > span');
+            const telegramButtonDiv = document.querySelector('#feedback-modal > .modal-content > #feedback-form > .mb-6:last-of-type');
+            
+            if (isMobile()) {
+                // Полное удаление возможности загрузки файлов на мобильных
+                if (fileUploaderControls) fileUploaderControls.style.display = 'none';
+                if (fileError) fileError.style.display = 'none';
+                if (fileListContainer) fileListContainer.style.display = 'none';
+                
+                // Переключение текста кнопки Telegram для мобильных
+                if (telegramButtonDiv) {
+                    telegramButtonDiv.querySelector('p').textContent = 'Используйте Telegram, чтобы отправить Ваш отзыв или файлы.';
+                }
+
+            } else {
+                // Обновление текста для ПК с новыми лимитами
+                if (infoSpan) infoSpan.textContent = 'Прикрепить файлы (макс. 3 шт., общий вес до 2 МБ)';
             }
         };
     </script>
