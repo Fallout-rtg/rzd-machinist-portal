@@ -1,13 +1,9 @@
 const { Telegraf, Markup } = require('telegraf');
 const Busboy = require('busboy');
 
-// Глобальное хранилище состояний (в serverless среде Vercel оно может сбрасываться 
-// при "холодном" старте, но для активной переписки обычно держится достаточно долго)
-// Хранит ID пользователей, которые нажали кнопку "Поддержка" и бот ждет от них сообщения.
 const supportWaitList = new Set();
 
 module.exports = async (req, res) => {
-  // --- CORS Config ---
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
@@ -18,12 +14,10 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // --- Configuration ---
   const BOT_TOKEN = process.env.BOT_TOKEN;
   const OWNER_ID = process.env.OWNER_ID;
   const SITE_URL = 'https://rzd-machinist-portal.vercel.app';
   
-  // Медиа ссылки
   const START_PHOTO_URL = 'https://avatars.mds.yandex.net/get-shedevrum/17784680/img_1058f787ced111f09d76864026b543ce/orig';
   const LOCOMOTIVES_MENU_PHOTO_URL = `${SITE_URL}/images/locomotives/locomotives_commands.jpg`;
 
@@ -33,7 +27,6 @@ module.exports = async (req, res) => {
 
   const bot = new Telegraf(BOT_TOKEN);
 
-  // --- Data ---
   const LOCOMOTIVES = [
     {
       id: 'chs2',
@@ -89,44 +82,42 @@ module.exports = async (req, res) => {
     }
   ];
 
-  // --- Helpers ---
   function cleanFileName(filename) {
     if (!filename) return `file_${Date.now()}`;
     return filename.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\s+/g, '_').toLowerCase();
   }
 
   function formatLocomotiveInfo(loco) {
-    return `🚂 *${loco.name}*\n\n` +
-           `📊 *Тип:* ${loco.type}\n` +
-           `📅 *Год выпуска:* ${loco.year}\n` +
-           `⚡ *Мощность:* ${loco.power}\n` +
-           `💨 *Макс. скорость:* ${loco.speed}\n` +
-           `⚖️ *Вес:* ${loco.weight}\n` +
-           `📏 *Длина:* ${loco.length}\n` +
-           `🏭 *Производитель:* ${loco.manufacturer}\n\n` +
-           `📝 *Описание:*\n${loco.description}`;
+    return `🚂 <b>${loco.name}</b>\n\n` +
+           `📊 <b>Тип:</b> ${loco.type}\n` +
+           `📅 <b>Год выпуска:</b> ${loco.year}\n` +
+           `⚡ <b>Мощность:</b> ${loco.power}\n` +
+           `💨 <b>Макс. скорость:</b> ${loco.speed}\n` +
+           `⚖️ <b>Вес:</b> ${loco.weight}\n` +
+           `📏 <b>Длина:</b> ${loco.length}\n` +
+           `🏭 <b>Производитель:</b> ${loco.manufacturer}\n\n` +
+           `📝 <b>Описание:</b>\n${loco.description}`;
   }
 
-  // Функция для отправки сообщений с формы сайта владельцу
   async function sendFeedbackToOwner(email, message, files, userAgent) {
     try {
       const isMobile = /mobile|android|iphone|ipad/i.test(userAgent || '');
       const deviceType = isMobile ? '📱 Мобильное устройство' : '💻 Компьютер';
       
-      let messageText = `📧 *СООБЩЕНИЕ С САЙТА*\n\n`;
-      messageText += `📨 *Email:* \`${email}\`\n`;
-      messageText += `📱 *Устройство:* ${deviceType}\n`;
-      messageText += `💬 *Текст:* ${message}\n\n`;
+      let messageText = `📧 <b>СООБЩЕНИЕ С САЙТА</b>\n\n`;
+      messageText += `📨 <b>Email:</b> <code>${email}</code>\n`;
+      messageText += `📱 <b>Устройство:</b> ${deviceType}\n`;
+      messageText += `💬 <b>Текст:</b>\n${message}\n\n`;
 
       if (files.length > 0) {
-        messageText += `📎 *Файлы (${files.length}):*\n`;
+        messageText += `📎 <b>Файлы (${files.length}):</b>\n`;
         files.forEach((file, index) => {
           const sizeMB = (file.size / 1024 / 1024).toFixed(2);
           messageText += `${index + 1}. ${file.filename} (${sizeMB} MB)\n`;
         });
         
         await bot.telegram.sendMessage(OWNER_ID, messageText, { 
-          parse_mode: 'Markdown',
+          parse_mode: 'HTML',
           disable_web_page_preview: true 
         });
 
@@ -151,7 +142,7 @@ module.exports = async (req, res) => {
           }
         }
       } else {
-        await bot.telegram.sendMessage(OWNER_ID, messageText, { parse_mode: 'Markdown' });
+        await bot.telegram.sendMessage(OWNER_ID, messageText, { parse_mode: 'HTML' });
       }
       return true;
     } catch (error) {
@@ -159,8 +150,6 @@ module.exports = async (req, res) => {
       return false;
     }
   }
-
-  // --- UI Functions ---
 
   const getMainKeyboard = () => {
     return Markup.inlineKeyboard([
@@ -172,16 +161,16 @@ module.exports = async (req, res) => {
 
   const sendMain = async (ctx) => {
     const userName = ctx.from.first_name || 'Путешественник';
-    const text = `👋 *Приветствую, ${userName}!*\n\n` +
-                 `Я — официальный бот *Демо-портала машиниста РЖД*.\n\n` +
+    const text = `👋 <b>Приветствую, ${userName}!</b>\n\n` +
+                 `Я — официальный бот <b>Демо-портала машиниста РЖД</b>.\n\n` +
                  `🚂 Здесь вы можете изучить технические характеристики современных и легендарных локомотивов.\n` +
                  `🌐 По кнопке ниже доступен полный функционал веб-портала.\n` +
                  `📞 Если у вас есть вопросы или предложения, напишите нам в поддержку.\n\n` +
-                 `*Что будем делать?*`;
+                 `<b>Что будем делать?</b>`;
 
     const commonOptions = {
         caption: text,
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: getMainKeyboard().reply_markup
     };
 
@@ -196,10 +185,10 @@ module.exports = async (req, res) => {
   };
 
   const sendLocomotivesMenu = async (ctx) => {
-    const menuText = `🛠 *Парк Локомотивов*\n\n` +
+    const menuText = `🛠 <b>Парк Локомотивов</b>\n\n` +
                      `В нашей базе представлены детальные характеристики подвижного состава.\n` +
                      `Нажмите на название серии, чтобы увидеть паспорт локомотива.\n\n` +
-                     `_Выберите модель:_`;
+                     `<i>Выберите модель:</i>`;
     
     const keyboard = Markup.inlineKeyboard([
       [Markup.button.callback('⚡ ЧС2 "Чебурашка"', 'loco_chs2')],
@@ -211,7 +200,7 @@ module.exports = async (req, res) => {
 
     const commonOptions = {
         caption: menuText,
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard.reply_markup
     };
 
@@ -232,7 +221,7 @@ module.exports = async (req, res) => {
   };
 
   const sendHelp = async (ctx) => {
-    const text = `🆘 *Центр помощи*\n\n` +
+    const text = `🆘 <b>Центр помощи</b>\n\n` +
                  `Используйте кнопки ниже для быстрой навигации:`;
     
     const keyboard = Markup.inlineKeyboard([
@@ -243,23 +232,18 @@ module.exports = async (req, res) => {
     ]);
 
     if (ctx.callbackQuery) {
-        // Если вызвано кнопкой (теоретически)
-        await ctx.editMessageCaption(text, { parse_mode: 'Markdown', reply_markup: keyboard.reply_markup })
-            .catch(() => ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard.reply_markup }));
+        await ctx.editMessageCaption(text, { parse_mode: 'HTML', reply_markup: keyboard.reply_markup })
+            .catch(() => ctx.reply(text, { parse_mode: 'HTML', reply_markup: keyboard.reply_markup }));
     } else {
-        // Если вызвано командой /help
-        await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard.reply_markup });
+        await ctx.reply(text, { parse_mode: 'HTML', reply_markup: keyboard.reply_markup });
     }
   };
-
-  // --- BOT HANDLERS ---
 
   bot.start(sendMain);
   bot.command('help', sendHelp);
 
-  // Навигация
   bot.action('back_to_main', async (ctx) => {
-    supportWaitList.delete(ctx.from.id); // Сбрасываем режим поддержки при уходе
+    supportWaitList.delete(ctx.from.id);
     await sendMain(ctx);
     await ctx.answerCbQuery();
   });
@@ -283,7 +267,7 @@ module.exports = async (req, res) => {
 
     const commonOptions = {
       caption: locoText,
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: keyboard.reply_markup
     };
 
@@ -299,18 +283,15 @@ module.exports = async (req, res) => {
     await ctx.answerCbQuery();
   });
 
-  // --- SUPPORT LOGIC ---
-
-  // 1. Пользователь нажимает кнопку
   bot.action('support_request', async (ctx) => {
     supportWaitList.add(ctx.from.id);
     
-    const text = `📞 *Служба поддержки*\n\n` +
+    const text = `📞 <b>Служба поддержки</b>\n\n` +
                  `Напишите ваше сообщение (текст, фото или видео) прямо сейчас, и я перешлю его администратору.\n\n` +
-                 `_Ожидаю вашего сообщения..._`;
+                 `<i>Ожидаю вашего сообщения...</i>`;
                  
     await ctx.reply(text, { 
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: Markup.inlineKeyboard([
             [Markup.button.callback('❌ Отмена', 'back_to_main')]
         ]).reply_markup
@@ -318,29 +299,23 @@ module.exports = async (req, res) => {
     await ctx.answerCbQuery();
   });
 
-  // 2. Обработка всех входящих сообщений
   bot.on('message', async (ctx) => {
     const userId = ctx.from.id;
     const isOwner = userId.toString() === OWNER_ID;
 
-    // A. Логика АДМИНИСТРАТОРА (Ответ пользователю)
     if (isOwner && ctx.message.reply_to_message) {
-        // Пытаемся достать ID пользователя из текста оригинального сообщения (которое бот прислал админу)
-        // Формат бота: "📩 #SupportRequest [12345678]..."
         const originalText = ctx.message.reply_to_message.text || ctx.message.reply_to_message.caption || '';
-        const idMatch = originalText.match(/\[(\d+)\]/); // Ищем ID в квадратных скобках
+        const idMatch = originalText.match(/\[(\d+)\]/);
         
         if (idMatch && idMatch[1]) {
             const targetUserId = idMatch[1];
             try {
-                // Копируем сообщение админа пользователю
                 await ctx.copyMessage(targetUserId);
                 
-                // Добавляем кнопку "Ответить" пользователю
                 await bot.telegram.sendMessage(targetUserId, 
-                    `👨‍💻 *Ответ от поддержки:*\n(см. сообщение выше)\n\n_Если хотите ответить, нажмите кнопку ниже:_`, 
+                    `👨‍💻 <b>Ответ от поддержки:</b>\n(см. сообщение выше)\n\n<i>Если хотите ответить, нажмите кнопку ниже:</i>`, 
                     {
-                        parse_mode: 'Markdown',
+                        parse_mode: 'HTML',
                         reply_markup: Markup.inlineKeyboard([
                             [Markup.button.callback('💬 Ответить в поддержку', 'support_request')]
                         ]).reply_markup
@@ -351,34 +326,33 @@ module.exports = async (req, res) => {
                 console.error('Ошибка отправки ответа:', err);
                 await ctx.reply('❌ Не удалось отправить ответ (пользователь заблокировал бота?).');
             }
-        } else {
-            // Если это не сообщение поддержки, игнорируем или пишем в лог
         }
         return;
     }
 
-    // B. Логика ПОЛЬЗОВАТЕЛЯ (Отправка в поддержку)
     if (supportWaitList.has(userId)) {
-        // Формируем заголовок для Админа
-        const userInfo = `📩 #SupportRequest\n👤 *От:* ${ctx.from.first_name} ${ctx.from.last_name || ''}\n🆔 ID: [${userId}]\n🔗 @${ctx.from.username || 'нет_юзернейма'}`;
+        const firstName = ctx.from.first_name || '';
+        const lastName = ctx.from.last_name || '';
+        const userName = ctx.from.username || 'нет_юзернейма';
+
+        const userInfo = `📩 <b>#SupportRequest</b>\n` +
+                         `👤 <b>От:</b> ${firstName} ${lastName}\n` +
+                         `🆔 ID: [${userId}]\n` +
+                         `🔗 @${userName}`;
         
         try {
-            // 1. Отправляем карточку с инфо о юзере (чтобы Админ мог сделать Reply на неё)
-            await bot.telegram.sendMessage(OWNER_ID, userInfo, { parse_mode: 'Markdown' });
+            await bot.telegram.sendMessage(OWNER_ID, userInfo, { parse_mode: 'HTML' });
             
-            // 2. Пересылаем само сообщение (чтобы видеть контент)
             await ctx.forwardMessage(OWNER_ID);
 
-            // 3. Подтверждаем юзеру
-            await ctx.reply(`✅ *Сообщение отправлено!*\nОтвет придет в этот чат.`, {
-                parse_mode: 'Markdown',
+            await ctx.reply(`✅ <b>Сообщение отправлено!</b>\nОтвет придет в этот чат.`, {
+                parse_mode: 'HTML',
                 reply_markup: Markup.inlineKeyboard([
                     [Markup.button.callback('🏠 В меню', 'back_to_main')],
                     [Markup.button.callback('💬 Написать ещё', 'support_request')]
                 ]).reply_markup
             });
 
-            // Убираем из списка ожидания, чтобы бот не пересылал каждое "спасибо"
             supportWaitList.delete(userId);
 
         } catch (err) {
@@ -388,18 +362,14 @@ module.exports = async (req, res) => {
     }
   });
 
-
-  // --- MAIN SERVER LOGIC ---
-
   try {
     if (req.method === 'POST') {
       const contentType = req.headers['content-type'] || '';
 
-      // 1. Обработка формы с сайта (multipart/form-data)
       if (contentType.includes('multipart/form-data')) {
         const bb = Busboy({ 
             headers: req.headers,
-            defParamCharset: 'utf8', // Важно для кириллицы
+            defParamCharset: 'utf8',
             limits: { fileSize: 50 * 1024 * 1024, files: 10 }
         });
         
@@ -418,7 +388,6 @@ module.exports = async (req, res) => {
         bb.on('file', (name, file, info) => {
           if (name === 'attachments') {
             const chunks = [];
-            // Фикс для мобильных: если filename отсутствует или пуст
             const safeFilename = info.filename ? Buffer.from(info.filename, 'latin1').toString('utf8') : `mobile_upload_${Date.now()}.jpg`;
             
             file.on('data', (chunk) => chunks.push(chunk));
@@ -429,7 +398,7 @@ module.exports = async (req, res) => {
               fileBuffers.push({ filename: safeFilename, buffer, mimeType: info.mimeType });
             });
           } else {
-             file.resume(); // Пропускаем лишние файлы
+             file.resume();
           }
         });
 
@@ -451,7 +420,6 @@ module.exports = async (req, res) => {
         return;
       } 
       
-      // 2. Обработка команд Телеграм (Webhook)
       else if (contentType.includes('application/json')) {
         let update;
         try {
