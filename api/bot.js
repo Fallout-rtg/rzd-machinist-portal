@@ -2,7 +2,6 @@ const { Telegraf, Markup } = require('telegraf');
 const Busboy = require('busboy');
 
 const supportWaitList = new Set();
-// Добавляем карту для отслеживания ID сообщений, которые нужно удалить
 const supportPromptMap = new Map(); 
 
 module.exports = async (req, res) => {
@@ -140,7 +139,7 @@ module.exports = async (req, res) => {
               await bot.telegram.sendDocument(OWNER_ID, { source: fileBuffer, filename: cleanName }, { caption: `📎 ${cleanName}` });
             }
           } catch (fileError) {
-            await bot.telegram.sendMessage(OWNER_ID, `❌ Не удалось отправить файл "${fileData.filename}"`);
+            
           }
         }
       } else {
@@ -148,7 +147,7 @@ module.exports = async (req, res) => {
       }
       return true;
     } catch (error) {
-      console.error('Feedback error:', error);
+      
       return false;
     }
   }
@@ -241,7 +240,6 @@ module.exports = async (req, res) => {
     }
   };
 
-  // --- ИЗМЕНЕННЫЙ ОБРАБОТЧИК bot.start для deep link и сохранения ID сообщения ---
   bot.start(async (ctx) => {
     const payload = ctx.startPayload;
     
@@ -259,39 +257,33 @@ module.exports = async (req, res) => {
           ]).reply_markup
       });
       
-      // Сохраняем ID сообщения для последующего удаления
       supportPromptMap.set(ctx.from.id, message.message_id); 
       
     } else {
       await sendMain(ctx);
     }
   });
-  // -----------------------------------------------------------------------------
   
   bot.command('help', sendHelp);
 
-  // ИСПРАВЛЕНО: answerCbQuery перемещен в начало
   bot.action('back_to_main', async (ctx) => {
-    await ctx.answerCbQuery(); // <--- ИСПРАВЛЕНО: ответ сразу
+    await ctx.answerCbQuery(); 
     supportWaitList.delete(ctx.from.id);
-    // Удаляем сообщение, к которому привязана кнопка "Отмена"
     try { await ctx.deleteMessage(); } catch(e){} 
     await sendMain(ctx);
   });
 
-  // ИСПРАВЛЕНО: answerCbQuery перемещен в начало
   bot.action('locomotives', async (ctx) => {
-    await ctx.answerCbQuery(); // <--- ИСПРАВЛЕНО: ответ сразу
+    await ctx.answerCbQuery(); 
     supportWaitList.delete(ctx.from.id);
     await sendLocomotivesMenu(ctx);
   });
 
-  // ИСПРАВЛЕНО: answerCbQuery перемещен в начало
   bot.action(/loco_([a-z0-9]+)/, async (ctx) => {
-    await ctx.answerCbQuery(); // <--- ИСПРАВЛЕНО: ответ сразу
+    await ctx.answerCbQuery(); 
     const locoId = ctx.match[1];
     const loco = LOCOMOTIVES.find(l => l.id === locoId);
-    if (!loco) return; // Убрали answerCbQuery, т.к. он уже в начале
+    if (!loco) return;
 
     const locoText = formatLocomotiveInfo(loco);
     const keyboard = Markup.inlineKeyboard([
@@ -316,13 +308,11 @@ module.exports = async (req, res) => {
     }
   });
 
-  // --- ИЗМЕНЕННЫЙ ОБРАБОТЧИК support_request (исправлен таймаут) ---
   bot.action('support_request', async (ctx) => {
-    await ctx.answerCbQuery(); // <--- ИСПРАВЛЕНО: ответ сразу
+    await ctx.answerCbQuery(); 
     
     supportWaitList.add(ctx.from.id);
     
-    // Удаляем сообщение меню, с которого был вызван support_request
     try { await ctx.deleteMessage(); } catch(e){} 
     
     const text = `📞 <b>Служба поддержки</b>\n\n` +
@@ -336,30 +326,24 @@ module.exports = async (req, res) => {
         ]).reply_markup
     });
     
-    // Сохраняем ID сообщения для последующего удаления
     supportPromptMap.set(ctx.from.id, message.message_id); 
     
   });
-  // -----------------------------------------------------------------
   
-  // --- НОВЫЕ ACTION'ы для удаления сообщения-подтверждения ---
   bot.action('back_to_main_and_delete', async (ctx) => {
     await ctx.answerCbQuery();
-    try { await ctx.deleteMessage(); } catch(e){} // Удаляем сообщение-подтверждение
+    try { await ctx.deleteMessage(); } catch(e){} 
     await sendMain(ctx);
   });
 
   bot.action('support_request_and_delete', async (ctx) => {
     await ctx.answerCbQuery();
-    try { await ctx.deleteMessage(); } catch(e){} // Удаляем сообщение-подтверждение
-    await bot.action('support_request')(ctx); // Перезапускаем запрос поддержки
+    try { await ctx.deleteMessage(); } catch(e){} 
+    await bot.action('support_request')(ctx); 
   });
-  // -----------------------------------------------------------
   
-  // --- НОВЫЙ ACTION для удаления сообщения с ответом админа ---
-  // ИСПРАВЛЕНО: answerCbQuery перемещен в начало
   bot.action('back_to_main_and_delete_reply', async (ctx) => {
-    await ctx.answerCbQuery(); // <--- ИСПРАВЛЕНО: ответ сразу
+    await ctx.answerCbQuery(); 
     
     const userId = ctx.from.id;
     const replyMessageId = supportPromptMap.get(`reply_${userId}`);
@@ -368,24 +352,21 @@ module.exports = async (req, res) => {
         try { 
             await bot.telegram.deleteMessage(userId, replyMessageId);
         } catch (e) {
-            console.error('Failed to delete admin reply message:', e);
+            
         }
         supportPromptMap.delete(`reply_${userId}`);
     } else {
-        // Fallback: удаляем сообщение, к которому привязана кнопка
+        
         try { await ctx.deleteMessage(); } catch(e){} 
     }
     
     await sendMain(ctx);
   });
-  // ------------------------------------------------------------
   
-  // --- ИЗМЕНЕННЫЙ ОБРАБОТЧИК bot.on('message') ---
   bot.on('message', async (ctx) => {
     const userId = ctx.from.id;
     const isOwner = userId.toString() === OWNER_ID;
 
-    // --- Логика ответа владельца (админа) ---
     if (isOwner && ctx.message.reply_to_message) {
         const originalText = ctx.message.reply_to_message.text || ctx.message.reply_to_message.caption || '';
         const idMatch = originalText.match(/\[(\d+)\]/);
@@ -395,40 +376,34 @@ module.exports = async (req, res) => {
             try {
                 await ctx.copyMessage(targetUserId);
                 
-                // Отправляем сообщение с ответом и кнопками
                 const replyMessage = await bot.telegram.sendMessage(targetUserId, 
                     `👨‍💻 <b>Ответ от поддержки:</b>\n(см. сообщение выше)\n\n<i>Если хотите ответить, нажмите кнопку ниже:</i>`, 
                     {
                         parse_mode: 'HTML',
                         reply_markup: Markup.inlineKeyboard([
                             [Markup.button.callback('💬 Ответить в поддержку', 'support_request')],
-                            // Добавляем новую кнопку для перехода в меню и удаления сообщения
                             [Markup.button.callback('🏠 В меню', 'back_to_main_and_delete_reply')] 
                         ]).reply_markup
                     }
                 );
                 
-                // Сохраняем ID сообщения с ответом для последующего удаления
                 supportPromptMap.set(`reply_${targetUserId}`, replyMessage.message_id); 
                 
                 await ctx.reply('✅ Ответ отправлен пользователю.');
             } catch (err) {
-                console.error('Ошибка отправки ответа:', err);
                 await ctx.reply('❌ Не удалось отправить ответ (пользователь заблокировал бота?).');
             }
         }
         return;
     }
 
-    // --- Логика запроса поддержки от пользователя ---
     if (supportWaitList.has(userId)) {
-        // 1. Удаляем предыдущее сообщение-запрос от бота
         const promptMessageId = supportPromptMap.get(userId);
         if (promptMessageId) {
             try { 
                 await bot.telegram.deleteMessage(userId, promptMessageId);
             } catch (err) {
-                console.error('Failed to delete prompt message:', err);
+                
             }
             supportPromptMap.delete(userId);
         }
@@ -447,7 +422,6 @@ module.exports = async (req, res) => {
             
             await ctx.forwardMessage(OWNER_ID);
 
-            // Отправляем сообщение-подтверждение с кнопками на новые action'ы для удаления
             await ctx.reply(`✅ <b>Сообщение отправлено!</b>\nОтвет придет в этот чат.`, {
                 parse_mode: 'HTML',
                 reply_markup: Markup.inlineKeyboard([
@@ -459,12 +433,10 @@ module.exports = async (req, res) => {
             supportWaitList.delete(userId);
 
         } catch (err) {
-            console.error('Ошибка пересылки:', err);
             await ctx.reply('❌ Ошибка отправки. Попробуйте позже.');
         }
     }
   });
-  // -------------------------------------------------
 
   try {
     if (req.method === 'POST') {
@@ -545,7 +517,6 @@ module.exports = async (req, res) => {
     res.status(405).json({ error: 'Method not allowed' });
     
   } catch (error) {
-    console.error('General Error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
