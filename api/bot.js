@@ -270,24 +270,28 @@ module.exports = async (req, res) => {
   
   bot.command('help', sendHelp);
 
+  // ИСПРАВЛЕНО: answerCbQuery перемещен в начало
   bot.action('back_to_main', async (ctx) => {
+    await ctx.answerCbQuery(); // <--- ИСПРАВЛЕНО: ответ сразу
     supportWaitList.delete(ctx.from.id);
     // Удаляем сообщение, к которому привязана кнопка "Отмена"
     try { await ctx.deleteMessage(); } catch(e){} 
     await sendMain(ctx);
-    await ctx.answerCbQuery();
   });
 
+  // ИСПРАВЛЕНО: answerCbQuery перемещен в начало
   bot.action('locomotives', async (ctx) => {
+    await ctx.answerCbQuery(); // <--- ИСПРАВЛЕНО: ответ сразу
     supportWaitList.delete(ctx.from.id);
     await sendLocomotivesMenu(ctx);
-    await ctx.answerCbQuery();
   });
 
+  // ИСПРАВЛЕНО: answerCbQuery перемещен в начало
   bot.action(/loco_([a-z0-9]+)/, async (ctx) => {
+    await ctx.answerCbQuery(); // <--- ИСПРАВЛЕНО: ответ сразу
     const locoId = ctx.match[1];
     const loco = LOCOMOTIVES.find(l => l.id === locoId);
-    if (!loco) return ctx.answerCbQuery('Локомотив не найден');
+    if (!loco) return; // Убрали answerCbQuery, т.к. он уже в начале
 
     const locoText = formatLocomotiveInfo(loco);
     const keyboard = Markup.inlineKeyboard([
@@ -310,11 +314,12 @@ module.exports = async (req, res) => {
         try { await ctx.deleteMessage(); } catch(e){}
         await ctx.replyWithPhoto(loco.photoUrl, commonOptions);
     }
-    await ctx.answerCbQuery();
   });
 
-  // --- ИЗМЕНЕННЫЙ ОБРАБОТЧИК support_request ---
+  // --- ИЗМЕНЕННЫЙ ОБРАБОТЧИК support_request (исправлен таймаут) ---
   bot.action('support_request', async (ctx) => {
+    await ctx.answerCbQuery(); // <--- ИСПРАВЛЕНО: ответ сразу
+    
     supportWaitList.add(ctx.from.id);
     
     // Удаляем сообщение меню, с которого был вызван support_request
@@ -334,9 +339,8 @@ module.exports = async (req, res) => {
     // Сохраняем ID сообщения для последующего удаления
     supportPromptMap.set(ctx.from.id, message.message_id); 
     
-    await ctx.answerCbQuery();
   });
-  // ----------------------------------------------
+  // -----------------------------------------------------------------
   
   // --- НОВЫЕ ACTION'ы для удаления сообщения-подтверждения ---
   bot.action('back_to_main_and_delete', async (ctx) => {
@@ -353,7 +357,10 @@ module.exports = async (req, res) => {
   // -----------------------------------------------------------
   
   // --- НОВЫЙ ACTION для удаления сообщения с ответом админа ---
+  // ИСПРАВЛЕНО: answerCbQuery перемещен в начало
   bot.action('back_to_main_and_delete_reply', async (ctx) => {
+    await ctx.answerCbQuery(); // <--- ИСПРАВЛЕНО: ответ сразу
+    
     const userId = ctx.from.id;
     const replyMessageId = supportPromptMap.get(`reply_${userId}`);
     
@@ -370,7 +377,6 @@ module.exports = async (req, res) => {
     }
     
     await sendMain(ctx);
-    await ctx.answerCbQuery();
   });
   // ------------------------------------------------------------
   
