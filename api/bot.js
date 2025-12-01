@@ -342,7 +342,7 @@ module.exports = async (req, res) => {
           else if (text.startsWith('/locomotives') || text.toLowerCase().includes('локомотив')) {
             await bot.telegram.sendPhoto(
               chatId,
-              `${SITE_URL}/images/locomotives/locomotives_commands.jpg`,
+              `https://raw.githubusercontent.com/Fallout-rtg/rzd-machinist-portal/refs/heads/main/images/locomotives/locomotives_commands.jpg`,
               {
                 caption: `🚂 *Локомотивы РЖД*\n\n` +
                          `*Выберите локомотив для получения подробной информации:*\n\n` +
