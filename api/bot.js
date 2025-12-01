@@ -90,39 +90,47 @@ module.exports = async (req, res) => {
           try {
             await new Promise(resolve => setTimeout(resolve, 500));
 
+            const cleanFilename = cleanFileName(fileData.filename);
+            
+            if (fileData.buffer.length === 0) {
+              continue;
+            }
+
+            const fileBuffer = Buffer.isBuffer(fileData.buffer) ? fileData.buffer : Buffer.from(fileData.buffer);
+
             if (fileData.mimeType.startsWith('image/')) {
               await bot.telegram.sendPhoto(
                 OWNER_ID,
-                { source: fileData.buffer },
+                { source: fileBuffer },
                 { 
-                  caption: `📸 ${fileData.filename}`,
+                  caption: `📸 ${cleanFilename}`,
                   disable_notification: true 
                 }
               );
             } else if (fileData.mimeType.startsWith('video/')) {
               await bot.telegram.sendVideo(
                 OWNER_ID,
-                { source: fileData.buffer },
+                { source: fileBuffer },
                 { 
-                  caption: `🎥 ${fileData.filename}`,
+                  caption: `🎥 ${cleanFilename}`,
                   disable_notification: true 
                 }
               );
             } else if (fileData.mimeType.includes('pdf')) {
               await bot.telegram.sendDocument(
                 OWNER_ID,
-                { source: fileData.buffer, filename: fileData.filename },
+                { source: fileBuffer, filename: cleanFilename },
                 { 
-                  caption: `📄 ${fileData.filename}`,
+                  caption: `📄 ${cleanFilename}`,
                   disable_notification: true 
                 }
               );
             } else {
               await bot.telegram.sendDocument(
                 OWNER_ID,
-                { source: fileData.buffer, filename: fileData.filename },
+                { source: fileBuffer, filename: cleanFilename },
                 { 
-                  caption: `📎 ${fileData.filename}`,
+                  caption: `📎 ${cleanFilename}`,
                   disable_notification: true 
                 }
               );
@@ -132,7 +140,7 @@ module.exports = async (req, res) => {
             console.error(`Error sending file ${fileData.filename}:`, fileError);
             await bot.telegram.sendMessage(
               OWNER_ID,
-              `❌ Ошибка при отправке файла "${fileData.filename}": ${fileError.message}`
+              `❌ Ошибка при отправке файла "${fileData.filename}": Файл не может быть отправлен через бота`
             );
           }
         }
@@ -150,6 +158,13 @@ module.exports = async (req, res) => {
     }
   }
 
+  function cleanFileName(filename) {
+    return filename
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/\s+/g, '_')
+      .toLowerCase();
+  }
+
   function formatLocomotiveInfo(loco) {
     return `🚂 *${loco.name}*\n\n` +
            `📊 *Тип:* ${loco.type}\n` +
@@ -160,7 +175,7 @@ module.exports = async (req, res) => {
            `📏 *Длина:* ${loco.length}\n` +
            `🏭 *Производитель:* ${loco.manufacturer}\n\n` +
            `📝 *Описание:*\n${loco.description}\n\n` +
-           `🔗 *Подробнее на сайте:* ${SITE_URL}`;
+           `🔗 Подробнее на сайте: ${SITE_URL}#locomotives`;
   }
 
   function getMainMenu(userId, isOwner) {
@@ -259,7 +274,7 @@ module.exports = async (req, res) => {
           }
 
           try {
-            const success = await sendFeedbackToOwner(email, message, files, userAgent);
+            const success = await sendFeedbackToOwner(email, message, fileBuffers, userAgent);
             
             if (success) {
               feedbackQueue.push({
@@ -324,7 +339,7 @@ module.exports = async (req, res) => {
             if (isOwner) {
               await bot.telegram.sendMessage(
                 chatId,
-                `👋 *Привет, создатель!*\n\nЯ ваш бот для демо-портала машиниста РЖД.\n\n📊 *Статистика за последнее время:*\n• Обратных связей: ${feedbackQueue.length}\n• Последнее: ${feedbackQueue.length > 0 ? new Date(feedbackQueue[feedbackQueue.length-1].timestamp).toLocaleString('ru-RU') : 'нет данных'}\n\n⚡ *Команды:*\n/start - Главное меню\n/locomotives - Информация о локомотивах\n/feedback - Форма обратной связи\n/site - Перейти на сайт`,
+                `👋 *Привет, создатель!*\n\nЯ ваш бот для демо-портала машиниста РЖД.\n\n📊 *Статистика за последнее время:*\n• Обратных связей: ${feedbackQueue.length}\n• Последнее: ${feedbackQueue.length > 0 ? new Date(feedbackQueue[feedbackQueue.length-1].timestamp).toLocaleString('ru-RU') : 'нет данных'}\n\n🚂 *Начните с просмотра локомотивов:*`,
                 { 
                   parse_mode: 'Markdown',
                   reply_markup: getMainMenu(userId, true)
@@ -333,10 +348,13 @@ module.exports = async (req, res) => {
             } else {
               await bot.telegram.sendMessage(
                 chatId,
-                `🚂 *Демо-портал машиниста РЖД*\n\n*Добро пожаловать, ${userName}!*\n\n🌐 *О проекте:*\nИнтерактивный портал, посвященный профессии машиниста и истории российских локомотивов.\n\n💡 *Особенности:*\n• 3D-галерея локомотивов\n• Информация о профессии\n• Образовательные учреждения\n• Обратная связь с поддержкой файлов`,
+                `🚂 *Демо-портал машиниста РЖД*\n\n*Добро пожаловать, ${userName}!*\n\nЯ помогу вам узнать больше о локомотивах и профессии машиниста.\n\n🚂 *Начните с просмотра локомотивов:*`,
                 {
                   parse_mode: 'Markdown',
-                  reply_markup: getMainMenu(userId, false)
+                  reply_markup: Markup.inlineKeyboard([
+                    [Markup.button.callback('🚂 Смотреть локомотивы', 'locomotives')],
+                    [Markup.button.url('🌐 Перейти на сайт', SITE_URL)]
+                  ])
                 }
               );
             }
@@ -365,22 +383,10 @@ module.exports = async (req, res) => {
               }
             );
           }
-          else if (text.startsWith('/feedback')) {
-            await bot.telegram.sendMessage(
-              chatId,
-              `📝 *Обратная связь*\n\nДля отправки сообщения используйте форму на сайте.\n\nВы можете прикрепить файлы до 50MB:\n• Изображения (JPG, PNG, GIF)\n• Видео (MP4, MOV)\n• Документы (PDF, DOC, TXT)`,
-              {
-                parse_mode: 'Markdown',
-                reply_markup: Markup.inlineKeyboard([
-                  [Markup.button.url('📝 Форма обратной связи', SITE_URL)]
-                ])
-              }
-            );
-          }
           else if (text.startsWith('/help')) {
             await bot.telegram.sendMessage(
               chatId,
-              `🆘 *Помощь*\n\n*Доступные команды:*\n/start - Главное меню\n/locomotives - Информация о локомотивах\n/feedback - Форма обратной связи\n/site - Перейти на сайт\n/help - Эта справка\n\n*Для администратора:*\n/stats - Статистика бота`,
+              `🆘 *Помощь*\n\n*Доступные команды:*\n/start - Главное меню\n/locomotives - Информация о локомотивах\n/site - Перейти на сайт\n/help - Эта справка\n\n*Для администратора:*\n/stats - Статистика бота`,
               {
                 parse_mode: 'Markdown',
                 reply_markup: getMainMenu(userId, isOwner)
@@ -494,7 +500,7 @@ module.exports = async (req, res) => {
                 chatId,
                 query.message.message_id,
                 null,
-                `👨‍✈️ *Профессия машиниста*\n\n*Ключевые аспекты:*\n\n📅 *График работы:* Сменный, включая ночные рейсы\n💰 *Заработная плата:* Высокая, с социальным пакетом\n⚡ *Ответственность:* Высочайшая безопасность движения\n🎯 *Требования:* Внимательность, стрессоустойчивость\n\n*Путь к профессии:*\n1. Образование в профильном ВУЗе\n2. Стажировка помощником машиниста (2+ года)\n3. Квалификационный экзамен\n\n🔗 *Подробнее на сайте:* ${SITE_URL}#crew-life`,
+                `👨‍✈️ *Профессия машиниста*\n\n*Ключевые аспекты:*\n\n📅 *График работы:* Сменный, включая ночные рейсы\n💰 *Заработная плата:* Высокая, с социальным пакетом\n⚡ *Ответственность:* Высочайшая безопасность движения\n🎯 *Требования:* Внимательность, стрессоустойчивость\n\n*Путь к профессии:*\n1. Образование в профильном ВУЗе\n2. Стажировка помощником машиниста (2+ года)\n3. Квалификационный экзамен\n\nПодробнее на сайте: ${SITE_URL}#crew-life`,
                 {
                   parse_mode: 'Markdown',
                   reply_markup: Markup.inlineKeyboard([
@@ -509,7 +515,7 @@ module.exports = async (req, res) => {
                 chatId,
                 query.message.message_id,
                 null,
-                `🎓 *Обучение на машиниста*\n\n*Ведущие ВУЗы России:*\n\n🏫 *РУТ (МИИТ), Москва*\n🏫 *ПГУПС, Санкт-Петербург*\n🏫 *УрГУПС, Екатеринбург*\n🏫 *ДВГУПС, Хабаровск*\n\n*Этапы обучения:*\n1. Среднее специальное или высшее образование\n2. Практика на железной дороге\n3. Сдача квалификационного экзамена\n\n*Срок обучения:* 4-5.5 лет\n\n🔗 *Подробнее на сайте:* ${SITE_URL}#education`,
+                `🎓 *Обучение на машиниста*\n\n*Ведущие ВУЗы России:*\n\n🏫 *РУТ (МИИТ), Москва*\n🏫 *ПГУПС, Санкт-Петербург*\n🏫 *УрГУПС, Екатеринбург*\n🏫 *ДВГУПС, Хабаровск*\n\n*Этапы обучения:*\n1. Среднее специальное или высшее образование\n2. Практика на железной дороге\n3. Сдача квалификационного экзамена\n\n*Срок обучения:* 4-5.5 лет\n\nПодробнее на сайте: ${SITE_URL}#education`,
                 {
                   parse_mode: 'Markdown',
                   reply_markup: Markup.inlineKeyboard([
