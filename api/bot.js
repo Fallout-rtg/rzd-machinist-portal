@@ -33,7 +33,8 @@ module.exports = async (req, res) => {
       weight: '126 тонн',
       length: '20.62 м',
       manufacturer: 'Škoda (Чехословакия)',
-      description: 'Легенда пассажирских перевозок СССР, прозванный "Чебурашкой". Первый советский серийный шестиосный пассажирский электровоз. Разработан в Чехословакии на заводе Škoda. Использовался на главных направлениях советских железных дорог.'
+      description: 'Легенда пассажирских перевозок СССР, прозванный "Чебурашкой". Первый советский серийный шестиосный пассажирский электровоз. Разработан в Чехословакии на заводе Škoda. Использовался на главных направлениях советских железных дорог.',
+      photoUrl: `${SITE_URL}/images/locomotives/chs2.jpg`
     },
     {
       id: 'vl80s',
@@ -45,7 +46,8 @@ module.exports = async (req, res) => {
       weight: '192 тонны',
       length: '32.4 м',
       manufacturer: 'НЭВЗ (СССР/Россия)',
-      description: 'Самый массовый грузовой локомотив переменного тока, трудяга советских и российских железных дорог. Буква "С" означает возможность работы по системе многих единиц.'
+      description: 'Самый массовый грузовой локомотив переменного тока, трудяга советских и российских железных дорог. Буква "С" означает возможность работы по системе многих единиц.',
+      photoUrl: `${SITE_URL}/images/locomotives/vl80s.jpg`
     },
     {
       id: '2te25km',
@@ -57,7 +59,21 @@ module.exports = async (req, res) => {
       weight: '2 × 150 тонн',
       length: '2 × 22.12 м',
       manufacturer: 'Брянский машиностроительный завод',
-      description: 'Современный мощный грузовой тепловоз, получивший прозвище "Витязь". Представляет собой двухсекционный локомотив с дизель-генераторной установкой.'
+      description: 'Современный мощный грузовой тепловоз, получивший прозвище "Витязь". Представляет собой двухсекционный локомотив с дизель-генераторной установкой.',
+      photoUrl: `${SITE_URL}/images/locomotives/2te25km.jpg`
+    },
+    {
+      id: 'ep20',
+      name: 'ЭП20',
+      type: 'Электровоз',
+      year: 2011,
+      power: '7200 кВт',
+      speed: '200 км/ч',
+      weight: '120 тонн',
+      length: '21.5 м',
+      manufacturer: 'НЭВЗ / Alstom',
+      description: 'Первый российский двухсистемный пассажирский электровоз, способный развивать скорость до 200 км/ч. Используется на скоростных маршрутах Москва — Адлер, Москва — Санкт-Петербург.',
+      photoUrl: `${SITE_URL}/images/locomotives/ep20.jpg`
     }
   ];
 
@@ -92,9 +108,7 @@ module.exports = async (req, res) => {
 
             const cleanFilename = cleanFileName(fileData.filename);
             
-            if (fileData.buffer.length === 0) {
-              continue;
-            }
+            if (fileData.buffer.length === 0) continue;
 
             const fileBuffer = Buffer.isBuffer(fileData.buffer) ? fileData.buffer : Buffer.from(fileData.buffer);
 
@@ -137,7 +151,7 @@ module.exports = async (req, res) => {
             }
             
           } catch (fileError) {
-            console.error(`Error sending file ${fileData.filename}:`, fileError);
+            console.error(`Error sending file ${fileData.filename}:`, fileError.message);
             await bot.telegram.sendMessage(
               OWNER_ID,
               `❌ Ошибка при отправке файла "${fileData.filename}": Файл не может быть отправлен через бота`
@@ -174,36 +188,86 @@ module.exports = async (req, res) => {
            `⚖️ *Вес:* ${loco.weight}\n` +
            `📏 *Длина:* ${loco.length}\n` +
            `🏭 *Производитель:* ${loco.manufacturer}\n\n` +
-           `📝 *Описание:*\n${loco.description}\n\n` +
-           `🔗 Подробнее на сайте: ${SITE_URL}#locomotives`;
+           `📝 *Описание:*\n${loco.description}`;
   }
 
-  function getMainMenu(userId, isOwner) {
-    const buttons = [
-      [Markup.button.callback('🚂 Локомотивы', 'locomotives')],
-      [Markup.button.callback('👨‍✈️ Профессия машиниста', 'profession')],
-      [Markup.button.callback('🎓 Обучение', 'education')],
-      [Markup.button.url('🌐 Перейти на сайт', SITE_URL)],
-    ];
+  async function sendLocomotivesMenu(chatId, messageId = null) {
+    const menuPhotoUrl = `${SITE_URL}/images/locomotives/locomotives_commands.jpg`;
+    const menuText = `🚂 *Локомотивы РЖД*\n\n` +
+                     `*Выберите локомотив для получения подробной информации:*\n\n` +
+                     `⚡ *Доступно в боте:*\n` +
+                     `• ЧС2 - легендарный "Чебурашка"\n` +
+                     `• ВЛ80С - трудяга грузовых перевозок\n` +
+                     `• 2ТЭ25КМ - современный "Витязь"\n` +
+                     `• ЭП20 - скоростной двухсистемный\n\n` +
+                     `🌐 *На сайте доступно ещё больше моделей!*`;
+    
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.callback('ЧС2', 'loco_chs2'), Markup.button.callback('ВЛ80С', 'loco_vl80s')],
+      [Markup.button.callback('2ТЭ25КМ', 'loco_2te25km'), Markup.button.callback('ЭП20', 'loco_ep20')],
+      [Markup.button.callback('🔙 Назад', 'back_to_main')]
+    ]);
 
-    if (isOwner) {
-      buttons.push([Markup.button.callback('📊 Статистика', 'stats')]);
+    try {
+      if (messageId) {
+        await bot.telegram.editMessageMedia(
+          chatId,
+          messageId,
+          null,
+          {
+            type: 'photo',
+            media: menuPhotoUrl,
+            caption: menuText,
+            parse_mode: 'Markdown'
+          },
+          {
+            reply_markup: keyboard.reply_markup
+          }
+        );
+      } else {
+        await bot.telegram.sendPhoto(
+          chatId,
+          menuPhotoUrl,
+          {
+            caption: menuText,
+            parse_mode: 'Markdown',
+            reply_markup: keyboard.reply_markup
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error sending locomotives menu:', error);
     }
-
-    return Markup.inlineKeyboard(buttons);
   }
 
-  function getLocomotivesMenu() {
-    const buttons = LOCOMOTIVES.map(loco => [
-      Markup.button.callback(loco.name, `loco_${loco.id}`)
+  async function sendLocomotiveInfo(chatId, messageId, locoId) {
+    const loco = LOCOMOTIVES.find(l => l.id === locoId);
+    if (!loco) return;
+
+    const locoText = formatLocomotiveInfo(loco);
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.url('🌐 На сайт', `${SITE_URL}#locomotives`)],
+      [Markup.button.callback('📋 Меню', 'locomotives')]
     ]);
-    
-    buttons.push([
-      Markup.button.callback('🔙 Назад', 'back_to_main'),
-      Markup.button.url('🌐 Все локомотивы', `${SITE_URL}#locomotives`)
-    ]);
-    
-    return Markup.inlineKeyboard(buttons);
+
+    try {
+      await bot.telegram.editMessageMedia(
+        chatId,
+        messageId,
+        null,
+        {
+          type: 'photo',
+          media: loco.photoUrl,
+          caption: locoText,
+          parse_mode: 'Markdown'
+        },
+        {
+          reply_markup: keyboard.reply_markup
+        }
+      );
+    } catch (error) {
+      console.error('Error sending locomotive info:', error);
+    }
   }
 
   try {
@@ -339,57 +403,35 @@ module.exports = async (req, res) => {
             if (isOwner) {
               await bot.telegram.sendMessage(
                 chatId,
-                `👋 *Привет, создатель!*\n\nЯ ваш бот для демо-портала машиниста РЖД.\n\n📊 *Статистика за последнее время:*\n• Обратных связей: ${feedbackQueue.length}\n• Последнее: ${feedbackQueue.length > 0 ? new Date(feedbackQueue[feedbackQueue.length-1].timestamp).toLocaleString('ru-RU') : 'нет данных'}\n\n🚂 *Начните с просмотра локомотивов:*`,
+                `👋 *Привет, создатель!*\n\nЯ ваш бот для демо-портала машиниста РЖД.\n\n📊 *Статистика за последнее время:*\n• Обратных связей: ${feedbackQueue.length}\n• Последнее: ${feedbackQueue.length > 0 ? new Date(feedbackQueue[feedbackQueue.length-1].timestamp).toLocaleString('ru-RU') : 'нет данных'}\n\nВыберите действие:`,
                 { 
                   parse_mode: 'Markdown',
-                  reply_markup: getMainMenu(userId, true)
+                  reply_markup: Markup.inlineKeyboard([
+                    [Markup.button.url('🌐 Перейти на сайт', SITE_URL)],
+                    [Markup.button.callback('🚂 Показать локомотивы', 'locomotives')]
+                  ])
                 }
               );
             } else {
               await bot.telegram.sendMessage(
                 chatId,
-                `🚂 *Демо-портал машиниста РЖД*\n\n*Добро пожаловать, ${userName}!*\n\nЯ помогу вам узнать больше о локомотивах и профессии машиниста.\n\n🚂 *Начните с просмотра локомотивов:*`,
+                `🚂 *Демо-портал машиниста РЖД*\n\n*Добро пожаловать, ${userName}!*\n\nЯ помогу вам узнать больше о локомотивах и профессии машиниста.\n\nВыберите действие:`,
                 {
                   parse_mode: 'Markdown',
                   reply_markup: Markup.inlineKeyboard([
-                    [Markup.button.callback('🚂 Смотреть локомотивы', 'locomotives')],
-                    [Markup.button.url('🌐 Перейти на сайт', SITE_URL)]
+                    [Markup.button.url('🌐 Перейти на сайт', SITE_URL)],
+                    [Markup.button.callback('🚂 Показать локомотивы', 'locomotives')]
                   ])
                 }
               );
             }
           } 
-          else if (text.startsWith('/locomotives') || text.toLowerCase().includes('локомотив')) {
-            userStates.set(userId, 'locomotives');
-            
-            await bot.telegram.sendMessage(
-              chatId,
-              `🚂 *Локомотивы РЖД*\n\nВыберите локомотив для получения информации:\n\n*Доступно в боте:*\n• ЧС2\n• ВЛ80С\n• 2ТЭ25КМ\n\n*На сайте доступно ещё больше моделей!*`,
-              {
-                parse_mode: 'Markdown',
-                reply_markup: getLocomotivesMenu()
-              }
-            );
-          }
-          else if (text.startsWith('/site')) {
-            await bot.telegram.sendMessage(
-              chatId,
-              `🌐 *Демо-портал машиниста РЖД*\n\nПерейдите по ссылке ниже, чтобы посетить сайт:`,
-              {
-                parse_mode: 'Markdown',
-                reply_markup: Markup.inlineKeyboard([
-                  [Markup.button.url('🚊 Перейти на сайт', SITE_URL)]
-                ])
-              }
-            );
-          }
           else if (text.startsWith('/help')) {
             await bot.telegram.sendMessage(
               chatId,
-              `🆘 *Помощь*\n\n*Доступные команды:*\n/start - Главное меню\n/locomotives - Информация о локомотивах\n/site - Перейти на сайт\n/help - Эта справка\n\n*Для администратора:*\n/stats - Статистика бота`,
+              `🆘 *Помощь*\n\n*Доступные команды:*\n/start - Главное меню\n/help - Эта справка\n\n*Для администратора:*\n/stats - Статистика бота`,
               {
-                parse_mode: 'Markdown',
-                reply_markup: getMainMenu(userId, isOwner)
+                parse_mode: 'Markdown'
               }
             );
           }
@@ -418,160 +460,57 @@ module.exports = async (req, res) => {
                 ).join('\n') || 'Нет данных'
               }`,
               {
-                parse_mode: 'Markdown',
-                reply_markup: getMainMenu(userId, true)
+                parse_mode: 'Markdown'
               }
             );
-          }
-          else if (text && !text.startsWith('/')) {
-            const loco = LOCOMOTIVES.find(l => 
-              l.name.toLowerCase() === text.toLowerCase() || 
-              text.toLowerCase().includes(l.name.toLowerCase())
-            );
-            
-            if (loco) {
-              await bot.telegram.sendMessage(
-                chatId,
-                formatLocomotiveInfo(loco),
-                {
-                  parse_mode: 'Markdown',
-                  reply_markup: getLocomotivesMenu()
-                }
-              );
-            } else {
-              const locoNames = LOCOMOTIVES.map(l => l.name).join(', ');
-              
-              await bot.telegram.sendMessage(
-                chatId,
-                `🔍 *Не нашел информацию по запросу*\n\nВведите название локомотива или выберите из списка:\n\n*Доступно в боте:*\n${locoNames}\n\n*Для просмотра всех локомотивов посетите сайт.*`,
-                {
-                  parse_mode: 'Markdown',
-                  reply_markup: getMainMenu(userId, isOwner)
-                }
-              );
-            }
           }
         }
 
         if (update.callback_query) {
           const query = update.callback_query;
           const chatId = query.message.chat.id;
+          const messageId = query.message.message_id;
           const userId = query.from.id;
           const data = query.data;
           const isOwner = userId.toString() === OWNER_ID;
 
           try {
             if (data === 'locomotives') {
-              userStates.set(userId, 'locomotives');
-              
-              await bot.telegram.editMessageText(
-                chatId,
-                query.message.message_id,
-                null,
-                `🚂 *Локомотивы РЖД*\n\nВыберите локомотив для получения информации:\n\n*Доступно в боте:*\n• ЧС2\n• ВЛ80С\n• 2ТЭ25КМ\n\n*На сайте доступно ещё больше моделей!*`,
-                {
-                  parse_mode: 'Markdown',
-                  reply_markup: getLocomotivesMenu()
-                }
-              );
+              await sendLocomotivesMenu(chatId, messageId);
             }
             else if (data.startsWith('loco_')) {
               const locoId = data.split('_')[1];
-              const loco = LOCOMOTIVES.find(l => l.id === locoId);
+              await sendLocomotiveInfo(chatId, messageId, locoId);
+            }
+            else if (data === 'back_to_main') {
+              try {
+                await bot.telegram.deleteMessage(chatId, messageId);
+              } catch (deleteError) {
+                console.error('Error deleting message:', deleteError);
+              }
               
-              if (loco) {
-                await bot.telegram.editMessageText(
+              if (isOwner) {
+                await bot.telegram.sendMessage(
                   chatId,
-                  query.message.message_id,
-                  null,
-                  formatLocomotiveInfo(loco),
-                  {
+                  `👋 *Главное меню*\n\nВыберите действие:`,
+                  { 
                     parse_mode: 'Markdown',
                     reply_markup: Markup.inlineKeyboard([
-                      [Markup.button.callback('🔙 К списку локомотивов', 'locomotives')],
-                      [Markup.button.url('🌐 Все локомотивы на сайте', `${SITE_URL}#locomotives`)]
+                      [Markup.button.url('🌐 Перейти на сайт', SITE_URL)],
+                      [Markup.button.callback('🚂 Показать локомотивы', 'locomotives')]
                     ])
                   }
                 );
-              }
-            }
-            else if (data === 'profession') {
-              await bot.telegram.editMessageText(
-                chatId,
-                query.message.message_id,
-                null,
-                `👨‍✈️ *Профессия машиниста*\n\n*Ключевые аспекты:*\n\n📅 *График работы:* Сменный, включая ночные рейсы\n💰 *Заработная плата:* Высокая, с социальным пакетом\n⚡ *Ответственность:* Высочайшая безопасность движения\n🎯 *Требования:* Внимательность, стрессоустойчивость\n\n*Путь к профессии:*\n1. Образование в профильном ВУЗе\n2. Стажировка помощником машиниста (2+ года)\n3. Квалификационный экзамен\n\nПодробнее на сайте: ${SITE_URL}#crew-life`,
-                {
-                  parse_mode: 'Markdown',
-                  reply_markup: Markup.inlineKeyboard([
-                    [Markup.button.callback('🔙 Назад', 'back_to_main')],
-                    [Markup.button.url('🌐 Подробнее на сайте', `${SITE_URL}#crew-life`)]
-                  ])
-                }
-              );
-            }
-            else if (data === 'education') {
-              await bot.telegram.editMessageText(
-                chatId,
-                query.message.message_id,
-                null,
-                `🎓 *Обучение на машиниста*\n\n*Ведущие ВУЗы России:*\n\n🏫 *РУТ (МИИТ), Москва*\n🏫 *ПГУПС, Санкт-Петербург*\n🏫 *УрГУПС, Екатеринбург*\n🏫 *ДВГУПС, Хабаровск*\n\n*Этапы обучения:*\n1. Среднее специальное или высшее образование\n2. Практика на железной дороге\n3. Сдача квалификационного экзамена\n\n*Срок обучения:* 4-5.5 лет\n\nПодробнее на сайте: ${SITE_URL}#education`,
-                {
-                  parse_mode: 'Markdown',
-                  reply_markup: Markup.inlineKeyboard([
-                    [Markup.button.callback('🔙 Назад', 'back_to_main')],
-                    [Markup.button.url('🌐 Подробнее на сайте', `${SITE_URL}#education`)]
-                  ])
-                }
-              );
-            }
-            else if (data === 'stats' && isOwner) {
-              const stats = {
-                totalFeedback: feedbackQueue.length,
-                last24h: feedbackQueue.filter(f => 
-                  new Date(f.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000)
-                ).length,
-                withFiles: feedbackQueue.filter(f => f.files > 0).length
-              };
-              
-              await bot.telegram.editMessageText(
-                chatId,
-                query.message.message_id,
-                null,
-                `📊 *Статистика бота*\n\n` +
-                `📨 *Всего обратных связей:* ${stats.totalFeedback}\n` +
-                `⏰ *За последние 24 часа:* ${stats.last24h}\n` +
-                `📎 *С файлами:* ${stats.withFiles}\n\n` +
-                `⚡ *Бот активен и работает стабильно*`,
-                {
-                  parse_mode: 'Markdown',
-                  reply_markup: getMainMenu(userId, true)
-                }
-              );
-            }
-            else if (data === 'back_to_main') {
-              userStates.set(userId, 'main');
-              
-              if (isOwner) {
-                await bot.telegram.editMessageText(
-                  chatId,
-                  query.message.message_id,
-                  null,
-                  `👋 *Главное меню*\n\nВыберите раздел для продолжения:`,
-                  {
-                    parse_mode: 'Markdown',
-                    reply_markup: getMainMenu(userId, true)
-                  }
-                );
               } else {
-                await bot.telegram.editMessageText(
+                await bot.telegram.sendMessage(
                   chatId,
-                  query.message.message_id,
-                  null,
-                  `👋 *Главное меню*\n\nВыберите раздел для продолжения:`,
+                  `👋 *Главное меню*\n\nВыберите действие:`,
                   {
                     parse_mode: 'Markdown',
-                    reply_markup: getMainMenu(userId, false)
+                    reply_markup: Markup.inlineKeyboard([
+                      [Markup.button.url('🌐 Перейти на сайт', SITE_URL)],
+                      [Markup.button.callback('🚂 Показать локомотивы', 'locomotives')]
+                    ])
                   }
                 );
               }
@@ -584,10 +523,7 @@ module.exports = async (req, res) => {
             try {
               await bot.telegram.sendMessage(
                 chatId,
-                `❌ Произошла ошибка. Попробуйте ещё раз.`,
-                {
-                  reply_markup: getMainMenu(userId, isOwner)
-                }
+                `❌ Произошла ошибка. Попробуйте ещё раз.`
               );
             } catch (sendError) {
               console.error('Error sending error message:', sendError);
@@ -614,9 +550,8 @@ module.exports = async (req, res) => {
         statistics: {
           totalFeedback,
           last24h,
-          activeUsers: userStates.size
+          locomotivesInBot: LOCOMOTIVES.length
         },
-        locomotivesInBot: LOCOMOTIVES.length,
         timestamp: new Date().toISOString()
       });
     }
