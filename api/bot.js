@@ -340,18 +340,17 @@ module.exports = async (req, res) => {
             }
           } 
           else if (text.startsWith('/locomotives') || text.toLowerCase().includes('локомотив')) {
-            await bot.telegram.sendPhoto(
+            await bot.telegram.sendMessage(
               chatId,
-              `https://raw.githubusercontent.com/Fallout-rtg/rzd-machinist-portal/refs/heads/main/images/locomotives/locomotives_commands.jpg`,
+              `🚂 *Локомотивы РЖД*\n\n` +
+              `*Выберите локомотив для получения подробной информации:*\n\n` +
+              `⚡ *Доступно в боте:*\n` +
+              `• ЧС2 - легендарный "Чебурашка"\n` +
+              `• ВЛ80С - трудяга грузовых перевозок\n` +
+              `• 2ТЭ25КМ - современный "Витязь"\n` +
+              `• ЭП20 - скоростной двухсистемный\n\n` +
+              `🌐 *На сайте доступно ещё больше моделей!*`,
               {
-                caption: `🚂 *Локомотивы РЖД*\n\n` +
-                         `*Выберите локомотив для получения подробной информации:*\n\n` +
-                         `⚡ *Доступно в боте:*\n` +
-                         `• ЧС2 - легендарный "Чебурашка"\n` +
-                         `• ВЛ80С - трудяга грузовых перевозок\n` +
-                         `• 2ТЭ25КМ - современный "Витязь"\n` +
-                         `• ЭП20 - скоростной двухсистемный\n\n` +
-                         `🌐 *На сайте доступно ещё больше моделей!*`,
                 parse_mode: 'Markdown',
                 reply_markup: {
                   inline_keyboard: [
@@ -414,20 +413,37 @@ module.exports = async (req, res) => {
             );
             
             if (loco) {
-              await bot.telegram.sendPhoto(
-                chatId,
-                loco.photoUrl,
-                {
-                  caption: formatLocomotiveInfo(loco),
-                  parse_mode: 'Markdown',
-                  reply_markup: {
-                    inline_keyboard: [
-                      [{ text: '🌐 На сайт', url: `${SITE_URL}#locomotives` }],
-                      [{ text: '📋 Меню', callback_data: 'locomotives' }]
-                    ]
+              try {
+                await bot.telegram.sendPhoto(
+                  chatId,
+                  loco.photoUrl,
+                  {
+                    caption: formatLocomotiveInfo(loco),
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                      inline_keyboard: [
+                        [{ text: '🌐 На сайт', url: `${SITE_URL}#locomotives` }],
+                        [{ text: '📋 Меню', callback_data: 'locomotives' }]
+                      ]
+                    }
                   }
-                }
-              );
+                );
+              } catch (photoError) {
+                console.error('Error sending photo:', photoError);
+                await bot.telegram.sendMessage(
+                  chatId,
+                  formatLocomotiveInfo(loco),
+                  {
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                      inline_keyboard: [
+                        [{ text: '🌐 На сайт', url: `${SITE_URL}#locomotives` }],
+                        [{ text: '📋 Меню', callback_data: 'locomotives' }]
+                      ]
+                    }
+                  }
+                );
+              }
             }
           }
         }
@@ -440,24 +456,19 @@ module.exports = async (req, res) => {
 
           try {
             if (data === 'locomotives') {
-              try {
-                await bot.telegram.deleteMessage(chatId, messageId);
-              } catch (deleteError) {
-                console.error('Error deleting message:', deleteError);
-              }
-              
-              await bot.telegram.sendPhoto(
+              await bot.telegram.editMessageText(
                 chatId,
-                `${SITE_URL}/images/locomotives/locomotives_commands.jpg`,
+                messageId,
+                null,
+                `🚂 *Локомотивы РЖД*\n\n` +
+                `*Выберите локомотив для получения подробной информации:*\n\n` +
+                `⚡ *Доступно в боте:*\n` +
+                `• ЧС2 - легендарный "Чебурашка"\n` +
+                `• ВЛ80С - трудяга грузовых перевозок\n` +
+                `• 2ТЭ25КМ - современный "Витязь"\n` +
+                `• ЭП20 - скоростной двухсистемный\n\n` +
+                `🌐 *На сайте доступно ещё больше моделей!*`,
                 {
-                  caption: `🚂 *Локомотивы РЖД*\n\n` +
-                           `*Выберите локомотив для получения подробной информации:*\n\n` +
-                           `⚡ *Доступно в боте:*\n` +
-                           `• ЧС2 - легендарный "Чебурашка"\n` +
-                           `• ВЛ80С - трудяга грузовых перевозок\n` +
-                           `• 2ТЭ25КМ - современный "Витязь"\n` +
-                           `• ЭП20 - скоростной двухсистемный\n\n` +
-                           `🌐 *На сайте доступно ещё больше моделей!*`,
                   parse_mode: 'Markdown',
                   reply_markup: {
                     inline_keyboard: [
@@ -481,25 +492,36 @@ module.exports = async (req, res) => {
               
               if (loco) {
                 try {
-                  await bot.telegram.deleteMessage(chatId, messageId);
-                } catch (deleteError) {
-                  console.error('Error deleting message:', deleteError);
-                }
-                
-                await bot.telegram.sendPhoto(
-                  chatId,
-                  loco.photoUrl,
-                  {
-                    caption: formatLocomotiveInfo(loco),
-                    parse_mode: 'Markdown',
-                    reply_markup: {
-                      inline_keyboard: [
-                        [{ text: '🌐 На сайт', url: `${SITE_URL}#locomotives` }],
-                        [{ text: '📋 Меню', callback_data: 'locomotives' }]
-                      ]
+                  await bot.telegram.sendPhoto(
+                    chatId,
+                    loco.photoUrl,
+                    {
+                      caption: formatLocomotiveInfo(loco),
+                      parse_mode: 'Markdown',
+                      reply_markup: {
+                        inline_keyboard: [
+                          [{ text: '🌐 На сайт', url: `${SITE_URL}#locomotives` }],
+                          [{ text: '📋 Меню', callback_data: 'locomotives' }]
+                        ]
+                      }
                     }
-                  }
-                );
+                  );
+                } catch (photoError) {
+                  console.error('Error sending photo:', photoError);
+                  await bot.telegram.sendMessage(
+                    chatId,
+                    formatLocomotiveInfo(loco),
+                    {
+                      parse_mode: 'Markdown',
+                      reply_markup: {
+                        inline_keyboard: [
+                          [{ text: '🌐 На сайт', url: `${SITE_URL}#locomotives` }],
+                          [{ text: '📋 Меню', callback_data: 'locomotives' }]
+                        ]
+                      }
+                    }
+                  );
+                }
               }
             }
             else if (data === 'back_to_main') {
