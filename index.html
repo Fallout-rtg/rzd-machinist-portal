@@ -17,17 +17,17 @@
             --rzd-red: #D52B1E;
             --bg-light: #F0F4F8;
             --text-dark: #1F2937;
-            --component-bg: #ffffff;
-            --border-color: #e5e7eb;
-            --secondary-bg: #f8fafc;
+            /* ДОБАВЛЕНО: Переменные для компонентов в светлой теме */
+            --component-bg: #FFFFFF;
+            --shadow-color: rgba(0, 0, 0, 0.2);
         }
 
+        /* ДОБАВЛЕНО: Стили для Темной темы */
         [data-theme="dark"] {
             --bg-light: #111827;
-            --text-dark: #f9fafb;
-            --component-bg: #1f2937;
-            --border-color: #374151;
-            --secondary-bg: #374151;
+            --text-dark: #F9FAFB;
+            --component-bg: #1F2937;
+            --shadow-color: rgba(255, 255, 255, 0.15);
         }
 
         body {
@@ -36,63 +36,6 @@
             color: var(--text-dark);
             overflow-x: hidden;
             scroll-behavior: smooth;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        [data-theme="dark"] .bg-white {
-            background-color: var(--component-bg) !important;
-        }
-
-        [data-theme="dark"] .text-gray-900 {
-            color: #f9fafb !important;
-        }
-
-        [data-theme="dark"] .text-gray-700, 
-        [data-theme="dark"] .text-gray-600,
-        [data-theme="dark"] .text-gray-500 {
-            color: #d1d5db !important;
-        }
-        
-        [data-theme="dark"] .bg-gray-100 {
-            background-color: #374151 !important;
-        }
-
-        [data-theme="dark"] .border-gray-200,
-        [data-theme="dark"] .border-gray-300 {
-            border-color: #4b5563 !important;
-        }
-
-        [data-theme="dark"] input, 
-        [data-theme="dark"] textarea {
-            background-color: #374151;
-            color: #ffffff;
-            border-color: #4b5563;
-        }
-
-        [data-theme="dark"] .modal-content {
-            background-color: #1f2937;
-        }
-
-        [data-theme="dark"] .stat-item {
-            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-        }
-
-        [data-theme="dark"] .loco-image {
-            background-color: #374151;
-            border-color: #4b5563;
-        }
-        
-        [data-theme="dark"] .mobile-menu {
-            background-color: #1f2937;
-        }
-        
-        [data-theme="dark"] .nav-link {
-             color: #f9fafb;
-        }
-        
-        [data-theme="dark"] .nav-link:hover {
-            color: #f9fafb;
-            background-color: rgba(213, 43, 30, 0.2);
         }
 
         .enhanced-header {
@@ -222,6 +165,33 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* ДОБАВЛЕНО: Стили для уведомления о теме с использованием переменных */
+        .theme-notification {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background-color: var(--component-bg);
+            color: var(--text-dark);
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 2px solid var(--rzd-red);
+        }
+
+        .theme-notification.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
         
         .section-scroll {
             scroll-margin-top: 100px;
@@ -241,10 +211,6 @@
         .file-error {
             border-color: #EF4444;
             background-color: #FEF2F2;
-        }
-        [data-theme="dark"] .file-error {
-            background-color: #7f1d1d;
-            border-color: #991b1b;
         }
 
         .mobile-menu {
@@ -270,7 +236,7 @@
             gap: 1rem;
             margin-top: 1.5rem;
             padding-top: 1.5rem;
-            border-top: 2px dashed var(--border-color);
+            border-top: 2px dashed #e5e7eb;
         }
         
         .stat-item {
@@ -290,7 +256,7 @@
 
         .stat-value {
             font-size: 1.125rem;
-            color: var(--text-dark);
+            color: #111827;
             font-weight: 700;
             word-wrap: break-word;
             overflow-wrap: break-word;
@@ -310,10 +276,6 @@
         .loco-details-container::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
-        }
-        
-        [data-theme="dark"] .loco-details-container::-webkit-scrollbar-track {
-            background: #374151;
         }
 
         .loco-details-container::-webkit-scrollbar-thumb {
@@ -442,116 +404,6 @@
             min-height: 500px;
             transition: min-height 0.3s ease;
         }
-
-        .theme-toggle-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            background-color: var(--rzd-red);
-            border-radius: 50%;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 100;
-            transition: transform 0.3s, background-color 0.3s;
-        }
-        
-        .theme-toggle-btn:hover {
-            transform: rotate(45deg);
-            background-color: #b91c1c;
-        }
-
-        .theme-menu {
-            position: fixed;
-            bottom: 85px;
-            right: 20px;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            padding: 8px;
-            width: 200px;
-            z-index: 99;
-            transform: scale(0);
-            transform-origin: bottom right;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        [data-theme="dark"] .theme-menu {
-            background-color: #1f2937;
-            border: 1px solid #374151;
-        }
-
-        .theme-menu.active {
-            transform: scale(1);
-        }
-
-        .theme-option {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 10px 16px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: background-color 0.2s;
-            color: #1f2937;
-            font-weight: 500;
-        }
-        
-        [data-theme="dark"] .theme-option {
-            color: #f3f4f6;
-        }
-
-        .theme-option:hover {
-            background-color: #f3f4f6;
-        }
-        
-        [data-theme="dark"] .theme-option:hover {
-            background-color: #374151;
-        }
-
-        .theme-notification {
-            position: fixed;
-            top: 100px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-20px);
-            background-color: #1f2937;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border: 2px solid var(--rzd-red);
-        }
-        
-        [data-theme="dark"] .theme-notification {
-            background-color: #f3f4f6;
-            color: #1f2937;
-        }
-
-        .theme-notification.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .theme-notification button {
-            background-color: var(--rzd-red);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body class="antialiased">
@@ -568,30 +420,6 @@
             }
         }
     </script>
-
-    <div id="theme-notification" class="theme-notification">
-        <span id="theme-notification-text">Применена системная тема</span>
-        <button onclick="toggleThemeMenu()">Изменить</button>
-    </div>
-
-    <div class="theme-menu" id="theme-menu">
-        <div class="theme-option" onclick="setTheme('light')">
-            <span class="mr-2">☀️</span> Светлая тема
-        </div>
-        <div class="theme-option" onclick="setTheme('dark')">
-            <span class="mr-2">🌙</span> Тёмная тема
-        </div>
-        <div class="theme-option" onclick="setTheme('system')">
-            <span class="mr-2">💻</span> Системная тема
-        </div>
-    </div>
-
-    <button class="theme-toggle-btn" onclick="toggleThemeMenu()" aria-label="Настройки темы">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-    </button>
 
     <header class="bg-white shadow-xl sticky top-0 z-50 enhanced-header">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
@@ -816,68 +644,7 @@
         <span>Сообщение успешно отправлено!</span>
     </div>
     <script>
-        const LOCOMOTIVES = [ { name: "ЧС2", type: "Электровоз", year: 1958, features: "Легенда пассажирских перевозок СССР, прозванный 'Чебурашкой'. Первый советский серийный шестиосный пассажирский электровоз. Разработан в Чехословакии на заводе Škoda. Использовался на главных направлениях советских железных дорог. Отличался высокой надежностью, комфортной кабиной и характерным звуком двигателей. Выпускался с 1958 по 1972 год,...", power: "5100 кВт", speed: "160 км/ч", weight: "126 тонн", length: "20.62 м", manufacturer: "Škoda (Чехословакия)", file: "chs2.jpg" }, { name: "ВЛ80С", type: "Электровоз", year: 1961, features: "Самый массовый грузовой локомотив переменного тока, трудяга советских и российских железных дорог. Буква 'С' означает возможность работы по системе многих единиц. Применяется для вождения тяжеловесных грузовых составов. Отличается высокой надежностью и простотой конструкции. Производился Новочеркасским электровозостроительным заводом с 1961 по 1995 год. Используется на большинстве электрифицированных участков переменного тока. Модификация 'С' позволяет сцеплять два или три локомотива для увеличения мощности.", power: "6520 кВт", speed: "110 км/ч", weight: "192 тонны", length: "32.4 м", manufacturer: "НЭВЗ (СССР/Россия)", file: "vl80s.jpg" }, { name: "2ТЭ25КМ", type: "Тепловоз", year: 2014, features: "Современный мощный грузовой тепловоз, получивший прозвище 'Витязь'. Представляет собой двухсекционный локомотив с дизель-генераторной установкой. Отличается повышенной силой тяги, экономичностью и современными системами управления. Используется для тяжеловесных составов на неэлектрифицированных участках. Оснащен системой климат-контроля в кабине и современными средствами безопасности. Дизельный двигатель соответствует экологическим стандартам Евро-3. Локомотив оборудован системой диагностики и мониторинга в реальном времени.", power: "3670 кВт", speed: "120 км/ч", weight: "2 × 150 тонн", length: "2 × 22.12 м", manufacturer: "Брянский машиностроительный завод", file: "2te25km.jpg" }, { name: "ЭП20", type: "Электровоз", year: 2011, features: "Первый российский двухсистемный (постоянный и переменный ток) пассажирский электровоз, способный развивать скорость до 200 км/ч. Разработан на Новочеркасском электровозостроительном заводе совместно с французской компанией Alstom. Используется на скоростных маршрутах, таких как Москва — Адлер, Москва — Санкт-Петербург. Отличается современным дизайном, комфортной кабиной и низким уровнем шума. Оснащен асинхронными тяговыми двигателями. Локомотив может работать как на постоянном токе 3 кВ, так и на переменном 25 кВ. ЭП20 стал первым российским электровозом, спроектированным с использованием технологии IGBT.", power: "7200 кВт", speed: "200 км/ч", weight: "120 тонн", length: "21.5 м", manufacturer: "НЭВЗ / Alstom", file: "ep20.jpg" }, { name: "Ласточка (ЭС2Г)", type: "Электропоезд", year: 2014, features: "Высокотехнологичный пригородный и межрегиональный электропоезд, разработанный на базе Siemens Desiro. Производится на заводе Уральские локомотивы в Верхней Пышме. Обеспечивает высокий комфорт пассажиров и ускоренное сообщение между городами. Используется на маршрутах Москва — Нижний Новгород, Москва — Казань, в Крыму и на других направлениях. Имеет низкопольные площадки, кондиционирование, информационные системы и комфортабельные кресла. Поезд адаптирован к российским климатическим условиям и широкой колее. В состав может входить от 5 до 10 вагонов.", power: "5500 кВт", speed: "160 км/ч", weight: "328 тонн (10 вагонов)", length: "200 м (10 вагонов)", manufacturer: "Уральские локомотивы / Siemens", file: "lastochka.jpg" }, { name: "САПСАН (Velaro RUS)", type: "Скоростной поезд", year: 2009, features: "Высокоскоростной электропоезд, разработанный компанией Siemens специально для России. Используется на маршрутах Москва — Санкт-Петербург и Москва — Нижний Новгород. Способен развивать скорость до 250 км/ч. Отличается повышенной комфортностью, низким уровнем шума и адаптацией к суровым климатическим условиям. Обслуживает пассажиров первого и бизнес-класса. Стал символом скоростного движения на российских железных дорогах.", power: "8000 кВт", speed: "250 км/ч", weight: "667 тонн (10 вагонов)", length: "250 м (10 вагонов)", manufacturer: "Siemens (Германия)", file: "sapsan.jpg" }, { name: "ВЛ11", type: "Электровоз", year: 1975, features: "Магистральный грузопассажирский электровоз постоянного тока. Один из самых массовых локомотивов советского периода. Разработан на Тбилисском электровозостроительном заводе. Использовался по всему СССР, особенно на Урале, в Сибири и на Дальнем Востоке. Отличается простотой конструкции, надежностью и неприхотливостью в обслуживании. Многие локомотивы до сих пор используются на железных дорогах России и стран СНГ. Локомотив имеет восемь осей, реостатное торможение и систему рекуперации. Выпускался в различных модификациях: ВЛ11, ВЛ11М, ВЛ11Н.", power: "6160 кВт", speed: "100 км/ч", weight: "150 тонн", length: "33.4 м", manufacturer: "ТЭВЗ (СССР)", file: "vl11.jpg" }, { name: "ТЭП70", type: "Тепловоз", year: 1973, features: "Пассажирский тепловоз, способный развивать скорость до 160 км/ч. Разработан на Коломенском заводе. Широко используется на неэлектрифицированных участках для вождения пассажирских поездов. Отличается хорошей динамикой, комфортом для машинистов и современной (для своего времени) системой управления. Имеет характерный обтекаемый кузов. Выпускался с 1973 по 2006 год, построено более 1000 локомотивов. Используется на многих направлениях, включая фирменные поезда. Локомотив оснащен дизельным двигателем мощностью 2940 кВт и гидромеханической передачей.", power: "2940 кВт", speed: "160 км/ч", weight: "129 тонн", length: "20.42 м", manufacturer: "Коломенский завод", file: "tep70.jpg" }, { name: "2ЭС6 «Синара»", type: "Электровоз", year: 2006, features: "Современный грузовой электровоз постоянного тока российской разработки. Создан на заводе Уральские локомотивы в Верхней Пышме. Назван в честь реки Синара на Урале. Создан на замену устаревшим ВЛ10 и ВЛ11. Отличается высокой энергоэффективностью, современной кабиной управления с кондиционером и эргономичным постом управления. Используется на грузовых перевозках по всей России. Оснащен асинхронными тяговыми двигателями, системой рекуперативного торможения и микропроцессорной системой управления.", power: "6000 кВт", speed: "110 км/ч", weight: "200 тонн", length: "35 м", manufacturer: "Уральские локомотивы", file: "2es6.jpg" }, { name: "ЧМЭ3", type: "Тепловоз", year: 1963, features: "Самый массовый маневровый тепловоз в истории СССР и России, прозванный 'Чмухой'. Разработан в Чехословакии на заводе ČKD. Используется для маневровых работ и легких грузовых перевозок на всех железных дорогах. Отличается высокой надежностью, простотой в обслуживании и хорошим обзором. Выпускался с 1963 по 1997 год, в СССР и Россию поставлено более 7000 локомотивов. Оснащен дизельным двигателем мощностью 993 кВт и электрической передачей. Отличается высокой маневренностью.", power: "993 кВт", speed: "95 км/ч", weight: "123 тонны", length: "17.55 м", manufacturer: "ČKD (Чехословакия)", file: "chme3.jpg" }, { name: "ЭП2К", type: "Электровоз", year: 2013, features: "Пассажирский электровоз постоянного тока нового поколения. Разработан на Новочеркасском электровозостроительном заводе. Создан для замены устаревших ЧС7 и ВЛ65. Используется на большинстве пассажирских направлений неэлектрифицированных дорог. Отличается современным дизайном, комфортной кабиной с климат-контролем и низким уровнем шума. Оснащен асинхронными тяговыми двигателями и рекуперативным торможением. Имеет систему автоведения и диагностики. Локомотив может работать в сцепке до двух секций. Кабина машиниста соответствует современным эргономическим стандартам.", power: "5200 кВт", speed: "160 км/ч", weight: "126 тонн", length: "21.5 м", manufacturer: "НЭВЗ", file: "ep2k.jpg" }, { name: "Грузовой состав", type: "Железнодорожный состав", year: 2020, features: "Современный грузовой состав с вагонами нового поколения. Демонстрирует логистику грузовых перевозок РЖД - от сыпучих грузов до контейнеров. Оснащен системами автоматического контроля, GPS-мониторинга и датчиками состояния груза. Современные грузовые вагоны имеют увеличенную грузоподъемность, улучшенные тормозные системы и длительный срок службы. Составы могут достигать длины 1.5 км и перевозить до 10 000 тонн груза. Используются различные типы вагонов: полувагоны, цистерны, платформы, хопперы. Современные технологии позволяют отслеживать местоположение и состояние груза в реальном времени.", power: "Зависит от локомотива", speed: "80-100 км/ч", weight: "До 10 000 тонн", length: "До 1500 м", manufacturer: "Различные заводы", file: "freight_train.jpg" } ]; let currentSlide = 0; let autoScrollInterval; const CAROUSEL_DURATION = 8000; const MANUAL_INTERACTION_DELAY = 15000; let touchStartX = 0; let touchEndX = 0; let slidesCreated = false; function generateLocoDetailsHTML(loco) { const defaultDescription = "Нет детального описания."; const stats = [ { label: "Тип", value: loco.type }, { label: "Год выпуска", value: loco.year }, { label: "Мощность", value: loco.power }, { label: "Макс. скорость", value: loco.speed }, { label: "Вес", value: loco.weight }, { label: "Длина", value: loco.length }, { label: "Производитель", value: loco.manufacturer } ]; return ` <h4 class="text-3xl font-extrabold text-gray-900 mb-2">${loco.name}</h4> <p class="text-lg text-rzd-red mb-6">${loco.type} (${loco.year})</p> <p class="text-gray-700">${loco.features || defaultDescription}</p> <div class="loco-stats"> ${stats.map(stat => ` <div class="stat-item"> <div class="stat-label">${stat.label}</div> <div class="stat-value">${stat.value}</div> </div> `).join('')} </div> `; } function updateDetails(loco) { const detailsContainer = document.getElementById('locomotive-details'); detailsContainer.innerHTML = generateLocoDetailsHTML(loco); } const track = document.getElementById('carousel-track'); const paginationContainer = document.getElementById('carousel-pagination'); function createAllSlides() { if (slidesCreated) return; LOCOMOTIVES.forEach((loco, index) => { const slide = document.createElement('div'); slide.className = 'carousel-slide'; slide.setAttribute('data-index', index); const imageFile = loco.file || 'default.jpg'; slide.innerHTML = ` <div class="w-full h-full flex items-center justify-center"> <img src="images/locomotives/${imageFile}" alt="${loco.name}" class="loco-image" onerror="this.onerror=null;this.src='https://placehold.co/900x650/D52B1E/ffffff?text=${encodeURIComponent(loco.name)}'"> </div> `; track.appendChild(slide); const dot = document.createElement('button'); dot.className = 'w-3 h-3 rounded-full bg-gray-400 hover:bg-rzd-red transition duration-300 transform hover:scale-125'; dot.id = `dot-${index}`; dot.setAttribute('data-index', index); dot.onclick = () => navigateCarousel(index, true); paginationContainer.appendChild(dot); }); slidesCreated = true; } function updateCarousel(newIndex) { currentSlide = (newIndex + LOCOMOTIVES.length) % LOCOMOTIVES.length; const slides = Array.from(track.children); const dots = Array.from(paginationContainer.children); slides.forEach((slide, index) => { slide.classList.remove('active', 'prev', 'next', 'hidden'); let position = index - currentSlide; if (position > LOCOMOTIVES.length / 2) { position -= LOCOMOTIVES.length; } else if (position < -LOCOMOTIVES.length / 2) { position += LOCOMOTIVES.length; } if (position === 0) { slide.classList.add('active'); } else if (position === -1) { slide.classList.add('prev'); } else if (position === 1) { slide.classList.add('next'); } else { slide.classList.add('hidden'); } if (position === 0) { slide.style.zIndex = 100; } else { slide.style.zIndex = LOCOMOTIVES.length - Math.abs(position); } }); dots.forEach((dot, index) => { dot.classList.toggle('bg-rzd-red', index === currentSlide); dot.classList.toggle('bg-gray-400', index !== currentSlide); }); updateDetails(LOCOMOTIVES[currentSlide]); } function navigateCarousel(newIndex, isManual = false) { if (isManual) { stopAutoScroll(); setTimeout(startAutoScroll, MANUAL_INTERACTION_DELAY); } updateCarousel(newIndex); } function startAutoScroll() { clearInterval(autoScrollInterval); autoScrollInterval = setInterval(() => { updateCarousel(currentSlide + 1); }, CAROUSEL_DURATION); } function stopAutoScroll() { clearInterval(autoScrollInterval); } function handleTouchStart(evt) { touchStartX = evt.touches[0].clientX; } function handleTouchEnd(evt) { touchEndX = evt.changedTouches[0].clientX; handleSwipe(); } function handleSwipe() { const minSwipeDistance = 50; if (touchEndX < touchStartX - minSwipeDistance) { navigateCarousel(currentSlide + 1, true); } else if (touchEndX > touchStartX + minSwipeDistance) { navigateCarousel(currentSlide - 1, true); } } const MAX_FILE_SIZE = 50 * 1024 * 1024; const MAX_TOTAL_SIZE = 2 * 1024 * 1024; const MAX_FILE_COUNT = 3; let attachedFiles = []; const fileInput = document.getElementById('file-attachments'); const fileListContainer = document.getElementById('file-list'); const fileError = document.getElementById('file-error'); const isMobile = () => /mobile|android|iphone|ipad/i.test(navigator.userAgent); function cleanFileName(filename) { return filename.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\s+/g, '_').toLowerCase(); } function validateFile(file) { if (file.size > MAX_FILE_SIZE) { return `Файл "${file.name}" превышает максимальный размер 50MB.`; } return null; } function handleFileUpload() { fileError.classList.add('hidden'); const newFiles = Array.from(fileInput.files); const currentFilesCount = attachedFiles.length; const filesToAdd = []; for (const file of newFiles) { const validationError = validateFile(file); if (validationError) { fileError.textContent = validationError; fileError.classList.remove('hidden'); fileInput.value = ''; return; } filesToAdd.push(file); } const totalFiles = currentFilesCount + filesToAdd.length; if (!isMobile() && totalFiles > MAX_FILE_COUNT) { fileError.textContent = `Максимум ${MAX_FILE_COUNT} файла. Вы пытаетесь добавить ${totalFiles}.`; fileError.classList.remove('hidden'); fileInput.value = ''; return; } attachedFiles = [...attachedFiles, ...filesToAdd].slice(-MAX_FILE_COUNT); renderFileList(); fileInput.value = ''; } function removeFile(uniqueId) { attachedFiles = attachedFiles.filter(file => cleanFileName(file.name) + '_' + file.size !== uniqueId); renderFileList(); } function renderFileList() { fileListContainer.innerHTML = ''; if (attachedFiles.length === 0) return; const title = document.createElement('p'); title.className = 'text-sm font-semibold text-gray-700 mb-2'; title.textContent = `Прикрепленные файлы (${attachedFiles.length}):`; fileListContainer.appendChild(title); attachedFiles.forEach(file => { const uniqueId = cleanFileName(file.name) + '_' + file.size; const item = document.createElement('div'); item.className = 'flex items-center justify-between text-sm text-gray-600 bg-gray-100 p-2 rounded-lg mb-2'; item.id = `file-item-${uniqueId}`; item.innerHTML = ` <div class="flex items-center space-x-2"> <svg class="w-4 h-4 text-rzd-red flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path> </svg> <span class="truncate max-w-[150px] sm:max-w-[200px]">${file.name}</span> </div> <div class="flex items-center space-x-2"> <span class="text-xs text-gray-400 hidden sm:inline">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span> <button type="button" onclick="removeFile('${uniqueId}')" class="text-red-500 hover:text-red-700 p-1"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> </button> </div> `; fileListContainer.appendChild(item); }); } function validateForm() { const email = emailInput.value; if (!validateEmail(email)) { emailError.classList.remove('hidden'); return false; } emailError.classList.add('hidden'); fileError.classList.add('hidden'); if (!isMobile()) { let totalSize = attachedFiles.reduce((sum, file) => sum + file.size, 0); if (attachedFiles.length > MAX_FILE_COUNT || totalSize > MAX_TOTAL_SIZE) { fileError.textContent = `Общий размер файлов (${(totalSize / 1024 / 1024).toFixed(2)} МБ) или количество (${attachedFiles.length}) превышают лимиты (2 МБ / 3 шт.).`; fileError.classList.remove('hidden'); return false; } } return true; } const modal = document.getElementById('feedback-modal'); const notification = document.getElementById('success-notification'); const form = document.getElementById('feedback-form'); const emailInput = document.getElementById('email'); const emailError = document.getElementById('email-error'); const submitButton = document.getElementById('submit-button'); const spinner = document.getElementById('spinner'); const fileUploaderControls = document.getElementById('file-uploader-controls'); function toggleMobileMenu() { document.querySelector('.mobile-menu').classList.toggle('active'); } function openModal() { modal.classList.add('active'); document.body.style.overflow = 'hidden'; if (!isMobile()) { handleFileUpload(); } } function closeModal() { modal.classList.remove('active'); document.body.style.overflow = ''; } function showNotification() { notification.classList.add('active'); setTimeout(() => { notification.classList.remove('active'); }, 4000); } function validateEmail(email) { const regex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yandex\.(ru|com))$/i; return regex.test(email); } function submitForm(event) { event.preventDefault(); if (!validateForm()) return; submitButton.disabled = true; spinner.classList.remove('hidden'); const formData = new FormData(); formData.append('email', emailInput.value); formData.append('message', document.getElementById('message').value); formData.append('userAgent', navigator.userAgent); if (!isMobile()) { attachedFiles.forEach(file => { formData.append('attachments', file, file.name); }); } fetch('/api/bot', { method: 'POST', body: formData, }) .then(response => { if (!response.ok) { return response.json().then(err => { throw new Error(err.error || 'Ошибка отправки формы'); }); } return response.json(); }) .then(() => { closeModal(); form.reset(); attachedFiles = []; renderFileList(); showNotification(); }) .catch(error => { let errorMessage = "Неизвестная ошибка. Попробуйте позже."; if (error.message.includes('400')) { errorMessage = "Ошибка: неверный формат почты или пустое сообщение."; } else if (error.message.includes('500')) { errorMessage = "Ошибка сервера. Бот временно недоступен. Попробуйте позже."; } showErrorModal(errorMessage); }) .finally(() => { submitButton.disabled = false; spinner.classList.add('hidden'); }); } function showErrorModal(message) { const errorElement = document.createElement('div'); errorElement.className = 'fixed top-0 left-0 right-0 p-4 text-center bg-red-600 text-white font-bold z-50 shadow-lg'; errorElement.textContent = message; document.body.appendChild(errorElement); setTimeout(() => { errorElement.remove(); }, 5000); } function smoothScrollTo(targetId) { const targetElement = document.getElementById(targetId); if (targetElement) { const headerHeight = document.querySelector('header').offsetHeight; const targetPosition = targetElement.offsetTop - headerHeight - 20; window.scrollTo({ top: targetPosition, behavior: 'smooth' }); } } function initScrollAnimations() { const observerOptions = { threshold: 0.1 }; const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); } }); }, observerOptions); document.querySelectorAll('section').forEach(section => { section.classList.add('fade-in'); observer.observe(section); }); } 
-        
-        function toggleThemeMenu() {
-            const menu = document.getElementById('theme-menu');
-            menu.classList.toggle('active');
-        }
-
-        function setTheme(theme) {
-            localStorage.setItem('theme', theme);
-            applyTheme(theme);
-            const menu = document.getElementById('theme-menu');
-            menu.classList.remove('active');
-        }
-
-        function applyTheme(theme) {
-            let effectiveTheme = theme;
-            if (theme === 'system') {
-                effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            }
-            
-            if (effectiveTheme === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-            }
-            updateThemeNotification(theme, effectiveTheme);
-        }
-
-        function updateThemeNotification(setting, effective) {
-            const notif = document.getElementById('theme-notification');
-            const text = document.getElementById('theme-notification-text');
-            
-            let message = '';
-            if (setting === 'system') {
-                message = `Системная тема (${effective === 'dark' ? 'Тёмная' : 'Светлая'})`;
-            } else {
-                message = setting === 'dark' ? 'Тёмная тема' : 'Светлая тема';
-            }
-            
-            text.textContent = message;
-        }
-
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'system';
-            applyTheme(savedTheme);
-            
-            const notif = document.getElementById('theme-notification');
-            notif.classList.add('show');
-            setTimeout(() => {
-                notif.classList.remove('show');
-            }, 5000);
-            
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-                if (localStorage.getItem('theme') === 'system') {
-                    applyTheme('system');
-                }
-            });
-        }
-        
-        window.onload = function() { createAllSlides(); updateCarousel(currentSlide); startAutoScroll(); initScrollAnimations(); document.querySelectorAll('a[href^="#"]').forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); const targetId = this.getAttribute('href').substring(1); smoothScrollTo(targetId); }); }); const carousel = document.getElementById('locomotive-carousel'); carousel.addEventListener('touchstart', handleTouchStart, false); carousel.addEventListener('touchend', handleTouchEnd, false); if (window.innerWidth < 640) { document.getElementById('nav-prev').style.display = 'none'; document.getElementById('nav-next').style.display = 'none'; } const infoSpan = document.querySelector('#file-uploader-controls > span'); const telegramButtonDiv = document.querySelector('#feedback-modal > .modal-content > #feedback-form > .mb-6:last-of-type'); if (isMobile()) { if (fileUploaderControls) fileUploaderControls.style.display = 'none'; if (fileError) fileError.style.display = 'none'; if (fileListContainer) fileListContainer.style.display = 'none'; if (telegramButtonDiv) { telegramButtonDiv.querySelector('p').textContent = 'Используйте Telegram, чтобы отправить Ваш отзыв или файлы.'; } } else { if (infoSpan) infoSpan.textContent = 'Прикрепить файлы (макс. 3 шт., общий вес до 2 МБ)'; } 
-        initTheme();
-        };
+        const LOCOMOTIVES = [ { name: "ЧС2", type: "Электровоз", year: 1958, features: "Легенда пассажирских перевозок СССР, прозванный 'Чебурашкой'. Первый советский серийный шестиосный пассажирский электровоз. Разработан в Чехословакии на заводе Škoda. Использовался на главных направлениях советских железных дорог. Отличался высокой надежностью, комфортной кабиной и характерным звуком двигателей. Выпускался с 1958 по 1972 год,...", power: "5100 кВт", speed: "160 км/ч", weight: "126 тонн", length: "20.62 м", manufacturer: "Škoda (Чехословакия)", file: "chs2.jpg" }, { name: "ВЛ80С", type: "Электровоз", year: 1961, features: "Самый массовый грузовой локомотив переменного тока, трудяга советских и российских железных дорог. Буква 'С' означает возможность работы по системе многих единиц. Применяется для вождения тяжеловесных грузовых составов. Отличается высокой надежностью и простотой конструкции. Производился Новочеркасским электровозостроительным заводом с 1961 по 1995 год. Используется на большинстве электрифицированных участков переменного тока. Модификация 'С' позволяет сцеплять два или три локомотива для увеличения мощности.", power: "6520 кВт", speed: "110 км/ч", weight: "192 тонны", length: "32.4 м", manufacturer: "НЭВЗ (СССР/Россия)", file: "vl80s.jpg" }, { name: "2ТЭ25КМ", type: "Тепловоз", year: 2014, features: "Современный мощный грузовой тепловоз, получивший прозвище 'Витязь'. Представляет собой двухсекционный локомотив с дизель-генераторной установкой. Отличается повышенной силой тяги, экономичностью и современными системами управления. Используется для тяжеловесных составов на неэлектрифицированных участках. Оснащен системой климат-контроля в кабине и современными средствами безопасности. Дизельный двигатель соответствует экологическим стандартам Евро-3. Локомотив оборудован системой диагностики и мониторинга в реальном времени.", power: "3670 кВт", speed: "120 км/ч", weight: "2 × 150 тонн", length: "2 × 22.12 м", manufacturer: "Брянский машиностроительный завод", file: "2te25km.jpg" }, { name: "ЭП20", type: "Электровоз", year: 2011, features: "Первый российский двухсистемный (постоянный и переменный ток) пассажирский электровоз, способный развивать скорость до 200 км/ч. Разработан на Новочеркасском электровозостроительном заводе совместно с французской компанией Alstom. Используется на скоростных маршрутах, таких как Москва — Адлер, Москва — Санкт-Петербург. Отличается современным дизайном, комфортной кабиной и низким уровнем шума. Оснащен асинхронными тяговыми двигателями. Локомотив может работать как на постоянном токе 3 кВ, так и на переменном 25 кВ. ЭП20 стал первым российским электровозом, спроектированным с использованием технологии IGBT.", power: "7200 кВт", speed: "200 км/ч", weight: "120 тонн", length: "21.5 м", manufacturer: "НЭВЗ / Alstom", file: "ep20.jpg" }, { name: "Ласточка (ЭС2Г)", type: "Электропоезд", year: 2014, features: "Высокотехнологичный пригородный и межрегиональный электропоезд, разработанный на базе Siemens Desiro. Производится на заводе Уральские локомотивы в Верхней Пышме. Обеспечивает высокий комфорт пассажиров и ускоренное сообщение между городами. Используется на маршрутах Москва — Нижний Новгород, Москва — Казань, в Крыму и на других направлениях. Имеет низкопольные площадки, кондиционирование, информационные системы и комфортабельные кресла. Поезд адаптирован к российским климатическим условиям и широкой колее. В состав может входить от 5 до 10 вагонов.", power: "5500 кВт", speed: "160 км/ч", weight: "328 тонн (10 вагонов)", length: "200 м (10 вагонов)", manufacturer: "Уральские локомотивы / Siemens", file: "lastochka.jpg" }, { name: "САПСАН (Velaro RUS)", type: "Скоростной поезд", year: 2009, features: "Высокоскоростной электропоезд, разработанный компанией Siemens специально для России. Используется на маршрутах Москва — Санкт-Петербург и Москва — Нижний Новгород. Способен развивать скорость до 250 км/ч. Отличается повышенной комфортностью, низким уровнем шума и адаптацией к суровым климатическим условиям. Обслуживает пассажиров первого и бизнес-класса. Стал символом скоростного движения на российских железных дорогах.", power: "8000 кВт", speed: "250 км/ч", weight: "667 тонн (10 вагонов)", length: "250 м (10 вагонов)", manufacturer: "Siemens (Германия)", file: "sapsan.jpg" }, { name: "ВЛ11", type: "Электровоз", year: 1975, features: "Магистральный грузопассажирский электровоз постоянного тока. Один из самых массовых локомотивов советского периода. Разработан на Тбилисском электровозостроительном заводе. Использовался по всему СССР, особенно на Урале, в Сибири и на Дальнем Востоке. Отличается простотой конструкции, надежностью и неприхотливостью в обслуживании. Многие локомотивы до сих пор используются на железных дорогах России и стран СНГ. Локомотив имеет восемь осей, реостатное торможение и систему рекуперации. Выпускался в различных модификациях: ВЛ11, ВЛ11М, ВЛ11Н.", power: "6160 кВт", speed: "100 км/ч", weight: "150 тонн", length: "33.4 м", manufacturer: "ТЭВЗ (СССР)", file: "vl11.jpg" }, { name: "ТЭП70", type: "Тепловоз", year: 1973, features: "Пассажирский тепловоз, способный развивать скорость до 160 км/ч. Разработан на Коломенском заводе. Широко используется на неэлектрифицированных участках для вождения пассажирских поездов. Отличается хорошей динамикой, комфортом для машинистов и современной (для своего времени) системой управления. Имеет характерный обтекаемый кузов. Выпускался с 1973 по 2006 год, построено более 1000 локомотивов. Используется на многих направлениях, включая фирменные поезда. Локомотив оснащен дизельным двигателем мощностью 2940 кВт и гидромеханической передачей.", power: "2940 кВт", speed: "160 км/ч", weight: "129 тонн", length: "20.42 м", manufacturer: "Коломенский завод", file: "tep70.jpg" }, { name: "2ЭС6 «Синара»", type: "Электровоз", year: 2006, features: "Современный грузовой электровоз постоянного тока российской разработки. Создан на заводе Уральские локомотивы в Верхней Пышме. Назван в честь реки Синара на Урале. Создан на замену устаревшим ВЛ10 и ВЛ11. Отличается высокой энергоэффективностью, современной кабиной управления с кондиционером и эргономичным постом управления. Используется на грузовых перевозках по всей России. Оснащен асинхронными тяговыми двигателями, системой рекуперативного торможения и микропроцессорной системой управления.", power: "6000 кВт", speed: "110 км/ч", weight: "200 тонн", length: "35 м", manufacturer: "Уральские локомотивы", file: "2es6.jpg" }, { name: "ЧМЭ3", type: "Тепловоз", year: 1963, features: "Самый массовый маневровый тепловоз в истории СССР и России, прозванный 'Чмухой'. Разработан в Чехословакии на заводе ČKD. Используется для маневровых работ и легких грузовых перевозок на всех железных дорогах. Отличается высокой надежностью, простотой в обслуживании и хорошим обзором. Выпускался с 1963 по 1997 год, в СССР и Россию поставлено более 7000 локомотивов. Оснащен дизельным двигателем мощностью 993 кВт и электрической передачей. Отличается высокой маневренностью.", power: "993 кВт", speed: "95 км/ч", weight: "123 тонны", length: "17.55 м", manufacturer: "ČKD (Чехословакия)", file: "chme3.jpg" }, { name: "ЭП2К", type: "Электровоз", year: 2013, features: "Пассажирский электровоз постоянного тока нового поколения. Разработан на Новочеркасском электровозостроительном заводе. Создан для замены устаревших ЧС7 и ВЛ65. Используется на большинстве пассажирских направлений неэлектрифицированных дорог. Отличается современным дизайном, комфортной кабиной с климат-контролем и низким уровнем шума. Оснащен асинхронными тяговыми двигателями и рекуперативным торможением. Имеет систему автоведения и диагностики. Локомотив может работать в сцепке до двух секций. Кабина машиниста соответствует современным эргономическим стандартам.", power: "5200 кВт", speed: "160 км/ч", weight: "126 тонн", length: "21.5 м", manufacturer: "НЭВЗ", file: "ep2k.jpg" }, { name: "Грузовой состав", type: "Железнодорожный состав", year: 2020, features: "Современный грузовой состав с вагонами нового поколения. Демонстрирует логистику грузовых перевозок РЖД - от сыпучих грузов до контейнеров. Оснащен системами автоматического контроля, GPS-мониторинга и датчиками состояния груза. Современные грузовые вагоны имеют увеличенную грузоподъемность, улучшенные тормозные системы и длительный срок службы. Составы могут достигать длины 1.5 км и перевозить до 10 000 тонн груза. Используются различные типы вагонов: полувагоны, цистерны, платформы, хопперы. Современные технологии позволяют отслеживать местоположение и состояние груза в реальном времени.", power: "Зависит от локомотива", speed: "80-100 км/ч", weight: "До 10 000 тонн", length: "До 1500 м", manufacturer: "Различные заводы", file: "freight_train.jpg" } ]; let currentSlide = 0; let autoScrollInterval; const CAROUSEL_DURATION = 8000; const MANUAL_INTERACTION_DELAY = 15000; let touchStartX = 0; let touchEndX = 0; let slidesCreated = false; function generateLocoDetailsHTML(loco) { const defaultDescription = "Нет детального описания."; const stats = [ { label: "Тип", value: loco.type }, { label: "Год выпуска", value: loco.year }, { label: "Мощность", value: loco.power }, { label: "Макс. скорость", value: loco.speed }, { label: "Вес", value: loco.weight }, { label: "Длина", value: loco.length }, { label: "Производитель", value: loco.manufacturer } ]; return ` <h4 class="text-3xl font-extrabold text-gray-900 mb-2">${loco.name}</h4> <p class="text-lg text-rzd-red mb-6">${loco.type} (${loco.year})</p> <p class="text-gray-700">${loco.features || defaultDescription}</p> <div class="loco-stats"> ${stats.map(stat => ` <div class="stat-item"> <div class="stat-label">${stat.label}</div> <div class="stat-value">${stat.value}</div> </div> `).join('')} </div> `; } function updateDetails(loco) { const detailsContainer = document.getElementById('locomotive-details'); detailsContainer.innerHTML = generateLocoDetailsHTML(loco); } const track = document.getElementById('carousel-track'); const paginationContainer = document.getElementById('carousel-pagination'); function createAllSlides() { if (slidesCreated) return; LOCOMOTIVES.forEach((loco, index) => { const slide = document.createElement('div'); slide.className = 'carousel-slide'; slide.setAttribute('data-index', index); const imageFile = loco.file || 'default.jpg'; slide.innerHTML = ` <div class="w-full h-full flex items-center justify-center"> <img src="images/locomotives/${imageFile}" alt="${loco.name}" class="loco-image" onerror="this.onerror=null;this.src='https://placehold.co/900x650/D52B1E/ffffff?text=${encodeURIComponent(loco.name)}'"> </div> `; track.appendChild(slide); const dot = document.createElement('button'); dot.className = 'w-3 h-3 rounded-full bg-gray-400 hover:bg-rzd-red transition duration-300 transform hover:scale-125'; dot.id = `dot-${index}`; dot.setAttribute('data-index', index); dot.onclick = () => navigateCarousel(index, true); paginationContainer.appendChild(dot); }); slidesCreated = true; } function updateCarousel(newIndex) { currentSlide = (newIndex + LOCOMOTIVES.length) % LOCOMOTIVES.length; const slides = Array.from(track.children); const dots = Array.from(paginationContainer.children); slides.forEach((slide, index) => { slide.classList.remove('active', 'prev', 'next', 'hidden'); let position = index - currentSlide; if (position > LOCOMOTIVES.length / 2) { position -= LOCOMOTIVES.length; } else if (position < -LOCOMOTIVES.length / 2) { position += LOCOMOTIVES.length; } if (position === 0) { slide.classList.add('active'); } else if (position === -1) { slide.classList.add('prev'); } else if (position === 1) { slide.classList.add('next'); } else { slide.classList.add('hidden'); } if (position === 0) { slide.style.zIndex = 100; } else { slide.style.zIndex = LOCOMOTIVES.length - Math.abs(position); } }); dots.forEach((dot, index) => { dot.classList.toggle('bg-rzd-red', index === currentSlide); dot.classList.toggle('bg-gray-400', index !== currentSlide); }); updateDetails(LOCOMOTIVES[currentSlide]); } function navigateCarousel(newIndex, isManual = false) { if (isManual) { stopAutoScroll(); setTimeout(startAutoScroll, MANUAL_INTERACTION_DELAY); } updateCarousel(newIndex); } function startAutoScroll() { clearInterval(autoScrollInterval); autoScrollInterval = setInterval(() => { updateCarousel(currentSlide + 1); }, CAROUSEL_DURATION); } function stopAutoScroll() { clearInterval(autoScrollInterval); } function handleTouchStart(evt) { touchStartX = evt.touches[0].clientX; } function handleTouchEnd(evt) { touchEndX = evt.changedTouches[0].clientX; handleSwipe(); } function handleSwipe() { const minSwipeDistance = 50; if (touchEndX < touchStartX - minSwipeDistance) { navigateCarousel(currentSlide + 1, true); } else if (touchEndX > touchStartX + minSwipeDistance) { navigateCarousel(currentSlide - 1, true); } } const MAX_FILE_SIZE = 50 * 1024 * 1024; const MAX_TOTAL_SIZE = 2 * 1024 * 1024; const MAX_FILE_COUNT = 3; let attachedFiles = []; const fileInput = document.getElementById('file-attachments'); const fileListContainer = document.getElementById('file-list'); const fileError = document.getElementById('file-error'); const isMobile = () => /mobile|android|iphone|ipad/i.test(navigator.userAgent); function cleanFileName(filename) { return filename.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\s+/g, '_').toLowerCase(); } function validateFile(file) { if (file.size > MAX_FILE_SIZE) { return `Файл "${file.name}" превышает максимальный размер 50MB.`; } return null; } function handleFileUpload() { fileError.classList.add('hidden'); const newFiles = Array.from(fileInput.files); const currentFilesCount = attachedFiles.length; const filesToAdd = []; for (const file of newFiles) { const validationError = validateFile(file); if (validationError) { fileError.textContent = validationError; fileError.classList.remove('hidden'); fileInput.value = ''; return; } filesToAdd.push(file); } const totalFiles = currentFilesCount + filesToAdd.length; if (!isMobile() && totalFiles > MAX_FILE_COUNT) { fileError.textContent = `Максимум ${MAX_FILE_COUNT} файла. Вы пытаетесь добавить ${totalFiles}.`; fileError.classList.remove('hidden'); fileInput.value = ''; return; } attachedFiles = [...attachedFiles, ...filesToAdd].slice(-MAX_FILE_COUNT); renderFileList(); fileInput.value = ''; } function removeFile(uniqueId) { attachedFiles = attachedFiles.filter(file => cleanFileName(file.name) + '_' + file.size !== uniqueId); renderFileList(); } function renderFileList() { fileListContainer.innerHTML = ''; if (attachedFiles.length === 0) return; const title = document.createElement('p'); title.className = 'text-sm font-semibold text-gray-700 mb-2'; title.textContent = `Прикрепленные файлы (${attachedFiles.length}):`; fileListContainer.appendChild(title); attachedFiles.forEach(file => { const uniqueId = cleanFileName(file.name) + '_' + file.size; const item = document.createElement('div'); item.className = 'flex items-center justify-between text-sm text-gray-600 bg-gray-100 p-2 rounded-lg mb-2'; item.id = `file-item-${uniqueId}`; item.innerHTML = ` <div class="flex items-center space-x-2"> <svg class="w-4 h-4 text-rzd-red flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path> </svg> <span class="truncate max-w-[150px] sm:max-w-[200px]">${file.name}</span> </div> <div class="flex items-center space-x-2"> <span class="text-xs text-gray-400 hidden sm:inline">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span> <button type="button" onclick="removeFile('${uniqueId}')" class="text-red-500 hover:text-red-700 p-1"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> </button> </div> `; fileListContainer.appendChild(item); }); } function validateForm() { const email = emailInput.value; if (!validateEmail(email)) { emailError.classList.remove('hidden'); return false; } emailError.classList.add('hidden'); fileError.classList.add('hidden'); if (!isMobile()) { let totalSize = attachedFiles.reduce((sum, file) => sum + file.size, 0); if (attachedFiles.length > MAX_FILE_COUNT || totalSize > MAX_TOTAL_SIZE) { fileError.textContent = `Общий размер файлов (${(totalSize / 1024 / 1024).toFixed(2)} МБ) или количество (${attachedFiles.length}) превышают лимиты (2 МБ / 3 шт.).`; fileError.classList.remove('hidden'); return false; } } return true; } const modal = document.getElementById('feedback-modal'); const notification = document.getElementById('success-notification'); const form = document.getElementById('feedback-form'); const emailInput = document.getElementById('email'); const emailError = document.getElementById('email-error'); const submitButton = document.getElementById('submit-button'); const spinner = document.getElementById('spinner'); const fileUploaderControls = document.getElementById('file-uploader-controls'); function toggleMobileMenu() { document.querySelector('.mobile-menu').classList.toggle('active'); } function openModal() { modal.classList.add('active'); document.body.style.overflow = 'hidden'; if (!isMobile()) { handleFileUpload(); } } function closeModal() { modal.classList.remove('active'); document.body.style.overflow = ''; } function showNotification() { notification.classList.add('active'); setTimeout(() => { notification.classList.remove('active'); }, 4000); } function validateEmail(email) { const regex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yandex\.(ru|com))$/i; return regex.test(email); } function submitForm(event) { event.preventDefault(); if (!validateForm()) return; submitButton.disabled = true; spinner.classList.remove('hidden'); const formData = new FormData(); formData.append('email', emailInput.value); formData.append('message', document.getElementById('message').value); formData.append('userAgent', navigator.userAgent); if (!isMobile()) { attachedFiles.forEach(file => { formData.append('attachments', file, file.name); }); } fetch('/api/bot', { method: 'POST', body: formData, }) .then(response => { if (!response.ok) { return response.json().then(err => { throw new Error(err.error || 'Ошибка отправки формы'); }); } return response.json(); }) .then(() => { closeModal(); form.reset(); attachedFiles = []; renderFileList(); showNotification(); }) .catch(error => { let errorMessage = "Неизвестная ошибка. Попробуйте позже."; if (error.message.includes('400')) { errorMessage = "Ошибка: неверный формат почты или пустое сообщение."; } else if (error.message.includes('500')) { errorMessage = "Ошибка сервера. Бот временно недоступен. Попробуйте позже."; } showErrorModal(errorMessage); }) .finally(() => { submitButton.disabled = false; spinner.classList.add('hidden'); }); } function showErrorModal(message) { const errorElement = document.createElement('div'); errorElement.className = 'fixed top-0 left-0 right-0 p-4 text-center bg-red-600 text-white font-bold z-50 shadow-lg'; errorElement.textContent = message; document.body.appendChild(errorElement); setTimeout(() => { errorElement.remove(); }, 5000); } function smoothScrollTo(targetId) { const targetElement = document.getElementById(targetId); if (targetElement) { const headerHeight = document.querySelector('header').offsetHeight; const targetPosition = targetElement.offsetTop - headerHeight - 20; window.scrollTo({ top: targetPosition, behavior: 'smooth' }); } } function initScrollAnimations() { const observerOptions = { threshold: 0.1 }; const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); } }); }, observerOptions); document.querySelectorAll('section').forEach(section => { section.classList.add('fade-in'); observer.observe(section); }); } window.onload = function() { createAllSlides(); updateCarousel(currentSlide); startAutoScroll(); initScrollAnimations(); document.querySelectorAll('a[href^="#"]').forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); const targetId = this.getAttribute('href').substring(1); smoothScrollTo(targetId); }); }); const carousel = document.getElementById('locomotive-carousel'); carousel.addEventListener('touchstart', handleTouchStart, false); carousel.addEventListener('touchend', handleTouchEnd, false); if (window.innerWidth < 640) { document.getElementById('nav-prev').style.display = 'none'; document.getElementById('nav-next').style.display = 'none'; } const infoSpan = document.querySelector('#file-uploader-controls > span'); const telegramButtonDiv = document.querySelector('#feedback-modal > .modal-content > #feedback-form > .mb-6:last-of-type'); if (isMobile()) { if (fileUploaderControls) fileUploaderControls.style.display = 'none'; if (fileError) fileError.style.display = 'none'; if (fileListContainer) fileListContainer.style.display = 'none'; if (telegramButtonDiv) { telegramButtonDiv.querySelector('p').textContent = 'Используйте Telegram, чтобы отправить Ваш отзыв или файлы.'; } } else { if (infoSpan) infoSpan.textContent = 'Прикрепить файлы (макс. 3 шт., общий вес до 2 МБ)'; } };
     </script>
 </body>
 </html>
